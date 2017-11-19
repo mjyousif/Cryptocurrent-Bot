@@ -44,7 +44,12 @@ def inline_crypto(bot, update):
              id=uuid4(),
              title='7 day change',
              input_message_content=InputTextMessageContent(sevenDayChange(query))
-         )
+         ),	
+		 InlineQueryResultArticle(
+             id=uuid4(),
+             title='Summary',
+             input_message_content=InputTextMessageContent(summary(query))
+         )	
      ]
      bot.answer_inline_query(update.inline_query.id, results)	
 
