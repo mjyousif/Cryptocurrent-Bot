@@ -74,4 +74,10 @@ def summary(coin):
 	pctChange1hr=coinData['percent_change_1h']
 	pctChange24hr=coinData['percent_change_24h']
 	pctChange7d=coinData['percent_change_7d']
-	summary=(name+"Price USD: $"+priceUSD+"Market Capitalization: $"+marketCap+"1 hour percent change: %"+pctChange1hr+"24 hour percent change: %"+pctChange24hr+"7 day percent change: %"+pctChange7d)
+	summaryOutput=("---"+name+" Summary---"+
+		"\nPrice USD: $"+priceUSD+
+		"\nMarket Capitalization: $"+marketCap+
+		"\n1 hour percent change: "+pctChange1hr+"%"+
+		"\n24 hour percent change: "+pctChange24hr+"%"+
+		"\n7 day percent change: "+pctChange7d+"%")
+	return summaryOutput
