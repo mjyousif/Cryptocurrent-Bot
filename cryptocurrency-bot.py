@@ -2,7 +2,8 @@ from telegram.ext import Updater, CommandHandler
 from telegram.ext import InlineQueryHandler
 from telegram import InlineQueryResultArticle, InputTextMessageContent, Message
 
-from json_api import main, cryptoValue, cryptoValueShort
+from uuid import uuid4
+from json_api import *
 updater = Updater(token='[CENSORED]')
 dispatcher = updater.dispatcher
 import logging
@@ -18,14 +19,33 @@ def inline_crypto(bot, update):
      query = update.inline_query.query
      if not query:
          return
-     results = list()
-     results.append(
+     results = [
          InlineQueryResultArticle(
-             id=main(query),
-             title='Crypto currency value',
-             input_message_content=InputTextMessageContent(main(query))
+             id=uuid4(),
+             title='USD Value',
+             input_message_content=InputTextMessageContent(cryptoValueMain(query))
+         ),
+		 InlineQueryResultArticle(
+             id=uuid4(),
+             title='Market Capitalization',
+             input_message_content=InputTextMessageContent(cryptoMarketCap(query))
+         ),
+		 InlineQueryResultArticle(
+             id=uuid4(),
+             title='1 hour change',
+             input_message_content=InputTextMessageContent(oneHourChange(query))
+         ),
+		 InlineQueryResultArticle(
+             id=uuid4(),
+             title='24 hour change',
+             input_message_content=InputTextMessageContent(oneDayChange(query))
+         ),
+		 InlineQueryResultArticle(
+             id=uuid4(),
+             title='7 day change',
+             input_message_content=InputTextMessageContent(sevenDayChange(query))
          )
-     )
+     ]
      bot.answer_inline_query(update.inline_query.id, results)	
 
 	

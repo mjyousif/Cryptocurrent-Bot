@@ -1,49 +1,77 @@
 import requests
 
-def cryptoValue(coin):
-
-
+#-------------------------------------------------------------------
+#Function to get the json for the coin
+def getCoinData(coin):
 	main_api='https://api.coinmarketcap.com/v1/ticker/'
-
-	#address='bitcoin'
-	#coin=input('Enter a cryptocurrency: ')
 	coin=coin.replace(" ","-")
 	url=main_api+coin
-
-	json_data=requests.get(url).json()
-	#print(json_data)
-	#print (len(json_data[0]))
-	if 'error' in json_data:
-		output='INVALID'
-	else:
-		json_name=json_data[0]["name"]
-		json_price=json_data[0]['price_usd']
-		output= (json_name+': $'+json_price)
+	json_data_end=requests.get(url).json() 
+	if 'error' in json_data_end: #This will check if the entered coin exists, if not, check if the symbol exists
+		url=main_api
+		json_data=requests.get(url).json()
+		index=0
+		for index in range(len(json_data)): #loops through entire coinmarketcap ticker until symbol found
+			if coin.upper()==json_data[index]["symbol"]:
+				json_data_end=json_data[index]
+				index==len(json_data)	
 #	print (output)
-	return output
-	
-#cryptoValue('bitcoin')
-def cryptoValueShort(coin):
-	main_api='https://api.coinmarketcap.com/v1/ticker/'
-	url=main_api
-	json_data=requests.get(url).json()
-	index=0
-	output='INVALID2'
-	for index in range(len(json_data)):
-		if coin.upper()==json_data[index]["symbol"]:
-			json_name=json_data[index]["name"]
-			json_price=json_data[index]['price_usd']
-			output= (json_name+': $'+json_price)
-			index==len(json_data)	
-	return output
-	
-def main(coin):
-	inValue=cryptoValue(coin)
-	if inValue=='INVALID':
-		inValue=cryptoValueShort(coin)
+	try:
+		json_data_end=json_data_end[0]
+	except:
+		json_data_end=json_data_end
+	return json_data_end
+	#the result will depend on whether the input was name or symbol
+	#the try-except is to overcome that because that's the first thing i thought of
+#----------------------------------------------------------------------
 
-	#print(inValue)
-	return inValue
+#Function to get market cap
+def cryptoMarketCap(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	marketCap=coinData['market_cap_usd']	
+	marketCapOutput=(name+' market capitalization: $'+marketCap)
+	return marketCapOutput
+
+	#Function to get crypto value
+def cryptoValueMain(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	priceUSD=coinData['price_usd']		
+	valueOutput=(name+': $'+priceUSD)
+	return valueOutput
 	
-# coinIn=input("Enter coin: ") #get the coin
-# print main(coinIn)
+def oneHourChange(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	priceUSD=coinData['price_usd']	
+	pctChange1hr=coinData['percent_change_1h']
+#	dollarChange1hr=float(priceUSD)/(1+float(pctChange1hr)/100)
+	oneHourChangeOutput=(name+" 1 hour percent change: "+pctChange1hr+"%")
+	return oneHourChangeOutput
+
+def oneDayChange(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	priceUSD=coinData['price_usd']	
+	pctChange24hr=coinData['percent_change_24h']
+	oneDayChangeOutput=(name+" 24 hour percent change: "+pctChange24hr+"%")	
+	return oneDayChangeOutput
+
+def sevenDayChange(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	priceUSD=coinData['price_usd']	
+	pctChange7d=coinData['percent_change_7d']
+	sevenDayChangeOutput=(name+" 7 day percent change: "+pctChange7d+"%")		
+	return sevenDayChangeOutput
+	
+def summary(coin):
+	coinData=getCoinData(coin)
+	name=coinData['name']
+	marketCap=coinData['market_cap_usd']
+	priceUSD=coinData['price_usd']	
+	pctChange1hr=coinData['percent_change_1h']
+	pctChange24hr=coinData['percent_change_24h']
+	pctChange7d=coinData['percent_change_7d']
+	summary=(name+"Price USD: $"+priceUSD+"Market Capitalization: $"+marketCap+"1 hour percent change: %"+pctChange1hr+"24 hour percent change: %"+pctChange24hr+"7 day percent change: %"+pctChange7d)
