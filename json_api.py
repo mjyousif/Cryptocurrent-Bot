@@ -1,4 +1,16 @@
 import requests
+#------------------------------------------------------------------
+#Misc. functions for use here
+#comma separated numbers that are entered as strings
+def prettyANDprecise(strNum):
+	numStrSplit=(strNum.split('.',1))
+	numStrFormatLeft="{:,}".format(float(numStrSplit[0]))
+	numStrFormatLeft=(numStrFormatLeft.split('.',1))
+	if (len(numStrSplit)==1):
+		pApOutput=numStrFormatLeft[0]
+	else:
+		pApOutput=(str(numStrFormatLeft[0])+'.'+numStrSplit[1])
+	return pApOutput
 
 #-------------------------------------------------------------------
 #Function to get the json for the coin
@@ -8,7 +20,7 @@ def getCoinData(coin):
 	url=main_api+coin
 	json_data_end=requests.get(url).json() 
 	if 'error' in json_data_end: #This will check if the entered coin exists, if not, check if the symbol exists
-		url=main_api
+		url='https://api.coinmarketcap.com/v1/ticker/?limit=10000'
 		json_data=requests.get(url).json()
 		index=0
 		for index in range(len(json_data)): #loops through entire coinmarketcap ticker until symbol found
@@ -16,13 +28,20 @@ def getCoinData(coin):
 				json_data_end=json_data[index]
 				index==len(json_data)	
 #	print (output)
+	#the result will depend on whether the input was name or symbol
+	#the try-except is to overcome that because that's the first thing i thought of
 	try:
 		json_data_end=json_data_end[0]
 	except:
 		json_data_end=json_data_end
+		
+	#this gets values with comma separations
+	json_data_end['price_usd']=prettyANDprecise(json_data_end['price_usd'])
+	json_data_end['market_cap_usd']=prettyANDprecise(json_data_end['market_cap_usd'])
+	json_data_end['24h_volume_usd']=prettyANDprecise(json_data_end['24h_volume_usd'])
+	
 	return json_data_end
-	#the result will depend on whether the input was name or symbol
-	#the try-except is to overcome that because that's the first thing i thought of
+
 #----------------------------------------------------------------------
 
 #Function to get market cap
