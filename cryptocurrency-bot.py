@@ -4,8 +4,10 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, Message
 
 from uuid import uuid4
 from json_api import *
+
 updater = Updater(token='[CENSORED]')
 dispatcher = updater.dispatcher
+
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
