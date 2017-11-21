@@ -35,10 +35,29 @@ def getCoinData(coin):
 	except:
 		json_data_end=json_data_end
 		
-	#this gets values with comma separations
-	json_data_end['price_usd']=prettyANDprecise(json_data_end['price_usd'])
-	json_data_end['market_cap_usd']=prettyANDprecise(json_data_end['market_cap_usd'])
-	json_data_end['24h_volume_usd']=prettyANDprecise(json_data_end['24h_volume_usd'])
+
+	#this gets values with comma separations and makes sure that the data exists
+	if (json_data_end['price_usd']==None):
+		json_data_end['price_usd']='N/A'
+	else:
+		json_data_end['price_usd']=prettyANDprecise(json_data_end['price_usd'])
+	
+	if (json_data_end['market_cap_usd']==None):
+		json_data_end['market_cap_usd']='N/A'
+	else:
+		json_data_end['market_cap_usd']=prettyANDprecise(json_data_end['market_cap_usd'])
+		
+	if (json_data_end['24h_volume_usd']==None):
+		json_data_end['24h_volume_usd']='N/A'
+	else:		
+		json_data_end['24h_volume_usd']=prettyANDprecise(json_data_end['24h_volume_usd'])
+	
+	if(json_data_end['percent_change_1h']==None):
+		json_data_end['percent_change_1h']='?'
+	if(json_data_end['percent_change_24h']==None):
+		json_data_end['percent_change_24h']='?'
+	if(json_data_end['percent_change_7d']==None):
+		json_data_end['percent_change_7d']='?'
 	
 	return json_data_end
 

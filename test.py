@@ -11,7 +11,7 @@
 
 
 #-------------------------------------------------
-from json_api import *
+# from json_api import *
 # # numStr='2181.120'
 # # numStrSplit=(numStr.split('.',1))
 # # numStrFormatLeft="{:,}".format(float(numStrSplit[0]))
@@ -24,6 +24,10 @@ from json_api import *
 # print(prettyANDprecise('2183'))
 # print('------')
 # print(prettyANDprecise('2183.120'))
-print(getCoinData('bitcoin'))
-print(getCoinData('ltc'))
-print(getCoinData('ponzi'))
+# print(getCoinData('bitcoin'))
+# print(getCoinData('ltc'))
+# print(getCoinData('ponzi'))
+#----------------------------------------
+from json_api import *
+
+print(getCoinData('mgc'))
