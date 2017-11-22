@@ -28,6 +28,7 @@
 # print(getCoinData('ltc'))
 # print(getCoinData('ponzi'))
 #----------------------------------------
-from json_api import *
-
-print(getCoinData('mgc'))
+# from json_api import *
+# print (getCoinName('btc'))
+# print(getCoinData('mgc'))
+#https://files.coinmarketcap.com/static/img/coins/128x128/[cryptocurrency ID].png
