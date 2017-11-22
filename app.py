@@ -32,6 +32,7 @@ def inline_crypto(bot, update):
              id=uuid4(),
              title='USD Value',
              input_message_content=InputTextMessageContent(cryptoValueMain(query)),
+			 thumb_url=None,
 			 #thumb_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+getCoinID(query) +'.png')
          ),
 		 InlineQueryResultArticle(
