@@ -28,6 +28,9 @@ Entering a tag will provide up to 5 articles that are tagged with that word. For
 All information for this functionality is retrieved from https://www.coindesk.com/feed/
 
 ## Credits
+
 Thanks to Telegram for enabling creators on their platform by having the bot api.
+
 Thanks to the python-telegram-bot team for creating a telegram bot api in python.
+
 Thanks to my TOP COUNSEL Izan Mubarak who accompanied me in the learning process and provided top tier expertise.
