@@ -56,25 +56,25 @@ def inline_crypto(bot, update):
             InlineQueryResultArticle(
                 id=uuid4(),
                 title='Market Capitalization: '+cryptoMarketCap(querySplitted, coinData),
-                input_message_content=InputTextMessageContent(coinName+': '+cryptoMarketCap(querySplitted, coinData)),
+                input_message_content=InputTextMessageContent(coinName+'Market Capitalization: '+cryptoMarketCap(querySplitted, coinData)),
                 thumb_url='https://i.imgur.com/egncB1b.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=oneHourChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+': '+oneHourChange(coinData)),
+                input_message_content=InputTextMessageContent(coinName+' '+oneHourChange(coinData)),
                 thumb_url='https://i.imgur.com/pza5Xjb.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=oneDayChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+': '+oneDayChange(coinData)),
+                input_message_content=InputTextMessageContent(coinName+' '+oneDayChange(coinData)),
                 thumb_url='https://i.imgur.com/98YM0PA.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=sevenDayChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+': '+sevenDayChange(coinData)),
+                input_message_content=InputTextMessageContent(coinName+' '+sevenDayChange(coinData)),
                 thumb_url='https://i.imgur.com/ZbPOM53.png'
             ),    
             InlineQueryResultArticle(
