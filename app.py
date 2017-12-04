@@ -32,7 +32,7 @@ def inline_crypto(bot, update):
         # newsArticles=news(None if len(newsQuery)==1 else newsQuery[1])
         results=[]
         i=0
-        for i in range(len(newsArticles) if len(newsArticles)<5 else 5):
+        for i in range(len(newsArticles)):
             results.append(InlineQueryResultArticle(id=uuid4(),title=newsArticles[i].title,input_message_content=InputTextMessageContent(newsArticles[i].link),description=newsArticles[i].description,))
     else:
         querySplitted=querySplit(query)
