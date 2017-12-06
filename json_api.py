@@ -149,7 +149,7 @@ def summary(querySplit, coinData):
 	pctChange1hr=coinData['percent_change_1h']
 	pctChange24hr=coinData['percent_change_24h']
 	pctChange7d=coinData['percent_change_7d']
-	summaryOutput=("---"+name+" Summary---"+
+	summaryOutput=("---"+name+" Summary"+'('+coinData['symbol']+')'+"---"+
 		"\nPrice: "+price+
 		"\nMarket Capitalization: "+marketCap+
 		"\n1 hour percent change: "+pctChange1hr+"%"+

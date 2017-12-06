@@ -79,7 +79,7 @@ def inline_crypto(bot, update):
             ),    
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Summary of '+coinName,
+                title='Summary of '+coinName+'('+coinData['symbol']+')',
                 input_message_content=InputTextMessageContent(summary(querySplitted, coinData)),
                 thumb_url='https://i.imgur.com/t6BPcMR.png'
             )
