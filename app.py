@@ -11,8 +11,9 @@ from uuid import uuid4
 from json_api import *
 from feedReader import *
 
-import logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 TOKEN='[CENSORED]'
 
@@ -174,6 +175,9 @@ def inline_crypto(bot, update):
             ),
         ]
     bot.answer_inline_query(update.inline_query.id, results)    
+
+def error(bot, update, error):
+logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
