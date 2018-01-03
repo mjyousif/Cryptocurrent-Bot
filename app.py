@@ -1,12 +1,20 @@
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from telegram import InlineQueryResultArticle, InlineQueryResultPhoto, InputTextMessageContent, Message
 
+#this stuff is for the webhook
+from queue import Queue
+from threading import Thread
+from telegram import Bot
+from telegram.ext import Dispatcher, MessageHandler, Filters
+
 from uuid import uuid4
 from json_api import *
 from feedReader import *
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+TOKEN='[CENSORED]'
 
 def start(bot, update):
     bot.send_message(
@@ -167,22 +175,34 @@ def inline_crypto(bot, update):
         ]
     bot.answer_inline_query(update.inline_query.id, results)    
 
-     
-def main():
-    updater = Updater(token='[CENSORED]')
-    dp=updater.dispatcher
-    
-    #commands to answer
-    dp.add_handler(CommandHandler('start', start))
-    
-    #non commands
-    dp.add_handler(InlineQueryHandler(inline_crypto))
+def setup(webhook_url=None):
+    """If webhook_url is not passed, run with long-polling."""
+    logging.basicConfig(level=logging.WARNING)
+    if webhook_url:
+        bot = Bot(TOKEN)
+        update_queue = Queue()
+        dp = Dispatcher(bot, update_queue)
+    else:
+        updater = Updater(TOKEN)
+        bot = updater.bot
+        dp = updater.dispatcher
+        dp.add_handler(CommandHandler("start", start))
 
-    #start bot
-
-    updater.start_polling()
-    #close with ctrl-c
-    updater.idle()
+        # on noncommand i.e message - echo the message on Telegram
+        dp.add_handler(InlineQueryHandler(inline_crypto))
+        
+        # log all errors
+        dp.add_error_handler(error)
+    # Add your handlers here
+    if webhook_url:
+        bot.set_webhook(webhook_url=webhook_url)
+        thread = Thread(target=dp.start, name='dispatcher')
+        thread.start()
+        return update_queue, bot
+    else:
+        bot.set_webhook()  # Delete webhook
+        updater.start_polling()
+        updater.idle()
     
 if __name__=='__main__':
-    main()
+    setup()
