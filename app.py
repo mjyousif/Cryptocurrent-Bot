@@ -177,7 +177,7 @@ def inline_crypto(bot, update):
     bot.answer_inline_query(update.inline_query.id, results)    
 
 def error(bot, update, error):
-logger.warning('Update "%s" caused error "%s"' % (update, error))
+    logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
