@@ -2,6 +2,7 @@ from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from telegram import InlineQueryResultArticle, InlineQueryResultPhoto, InputTextMessageContent, Message
 
 #this stuff is for the webhook
+import logging
 from queue import Queue
 from threading import Thread
 from telegram import Bot
