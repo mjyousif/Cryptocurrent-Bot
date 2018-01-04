@@ -210,7 +210,7 @@ def error(bot, update, error):
         # updater.idle()
     
 def main():
-    updater = Updater(token='491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8')
+    updater = Updater(token='[CENSORED]')
     dp=updater.dispatcher
     
     #commands to answer
