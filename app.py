@@ -1,12 +1,22 @@
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from telegram import InlineQueryResultArticle, InlineQueryResultPhoto, InputTextMessageContent, Message
 
+#this stuff is for the webhook
+import logging
+# from queue import Queue
+# from threading import Thread
+# from telegram import Bot
+# from telegram.ext import Dispatcher, MessageHandler, Filters
+
 from uuid import uuid4
 from json_api import *
 from feedReader import *
 
-import logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# TOKEN='[CENSORED]'
 
 def start(bot, update):
     bot.send_message(
@@ -34,61 +44,173 @@ def inline_crypto(bot, update):
         i=0
         for i in range(len(newsArticles)):
             results.append(InlineQueryResultArticle(id=uuid4(),title=newsArticles[i].title,input_message_content=InputTextMessageContent(newsArticles[i].link),description=newsArticles[i].description,))
+    if ',' in query:
+        classifiedQuery=classifyQuery(query)
+        i=0
+        jsonDataList=[]
+        #this loop saves all the data in a list to be used in parallel to the coinQuery list
+        for i in range(len(classifiedQuery.coinQuery)):
+            jsonDataList.append(getCoinData(classifiedQuery.coinQuery[i],classifiedQuery.currency))
+        #stuff that will go in the results, prepared up here because I can't do it in their respective results
+        nameList=""
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            nameList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"), \n"  
+        valueList="Values:\n"
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            valueList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+classifiedQuery.currency.upper()+"\n" 
+        capList="Market Caps:\n"
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            capList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+classifiedQuery.currency.upper()+"\n" 
+        hourList="1 Hour Changes:\n"
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            hourList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_1h']+"%"+"\n"  
+        dayList="1 Day Changes:\n"
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            dayList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_24h']+"%"+"\n"  
+        weekList="7 Day Changes:\n"
+        k=0
+        for k in range(len(classifiedQuery.coinQuery)):
+            weekList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_7d']+"%"+"\n"           
+        results = [
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title=nameList,
+                input_message_content=InputTextMessageContent(nameList),
+            ),
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title='Values',
+                input_message_content=InputTextMessageContent(valueList),
+                thumb_url='https://i.imgur.com/My7IG7r.png'
+            ),
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title='Market Capitalizations',
+                input_message_content=InputTextMessageContent(capList),
+                thumb_url='https://i.imgur.com/egncB1b.png'
+            ),
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title="One Hour Changes",
+                input_message_content=InputTextMessageContent(hourList),
+                thumb_url='https://i.imgur.com/pza5Xjb.png'
+            ),
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title="One Day Changes",
+                input_message_content=InputTextMessageContent(dayList),
+                thumb_url='https://i.imgur.com/98YM0PA.png'
+            ),
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title="Seven Day Changes",
+                input_message_content=InputTextMessageContent(weekList),
+                thumb_url='https://i.imgur.com/ZbPOM53.png'
+            ),   
+        ]
+    
     else:
-        querySplitted=querySplit(query)
-        coinData=getCoinData(query)
+        classifiedQuery=classifyQuery(query)
+        coinData=getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
         coinName=coinData['name']
+        coinSymbol=coinData['symbol']
+        coinPrice=coinData['price_'+classifiedQuery.currency]+" "+classifiedQuery.currency.upper()
+        coinCap=coinData['market_cap_'+classifiedQuery.currency]+" "+classifiedQuery.currency.upper()
+        coin1hr=coinData['percent_change_1h']+"%"
+        coin1day=coinData['percent_change_24h']+"%"
+        coin7day=coinData['percent_change_7d']+"%"
         results = [
             InlineQueryResultPhoto(
                 id=uuid4(),
                 photo_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+coinData['id'] +'.png'),
                 thumb_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+coinData['id'] +'.png'),
-                title=coinData['name']+'('+coinData['symbol']+')',
-                caption=coinData['name']+' ('+coinData['symbol']+')',
+                title=coinData['name']+'('+coinSymbol+')',
+                caption=coinData['name']+' ('+coinSymbol+')',
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Value: '+cryptoValueMain(querySplitted, coinData),
-                input_message_content=InputTextMessageContent(coinName+': '+cryptoValueMain(querySplitted, coinData)),
+                title='Value: '+coinPrice,
+                input_message_content=InputTextMessageContent(coinName+': '+coinPrice),
                 thumb_url='https://i.imgur.com/My7IG7r.png'
-                #thumb_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+getCoinID(query) +'.png')
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Market Capitalization: '+cryptoMarketCap(querySplitted, coinData),
-                input_message_content=InputTextMessageContent(coinName+' Market Capitalization: '+cryptoMarketCap(querySplitted, coinData)),
+                title='Market Capitalization: '+coinCap,
+                input_message_content=InputTextMessageContent(coinName+' Market Capitalization: '+coinCap),
                 thumb_url='https://i.imgur.com/egncB1b.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=oneHourChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+' '+oneHourChange(coinData)),
+                title="One Hour Change: "+coin1hr,
+                input_message_content=InputTextMessageContent(coinName+' One Hour Change: '+coin1hr),
                 thumb_url='https://i.imgur.com/pza5Xjb.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=oneDayChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+' '+oneDayChange(coinData)),
+                title="One Day Change: "+coin1day,
+                input_message_content=InputTextMessageContent(coinName+' One Day Change: '+coin1day),
                 thumb_url='https://i.imgur.com/98YM0PA.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=sevenDayChange(coinData),
-                input_message_content=InputTextMessageContent(coinName+' '+sevenDayChange(coinData)),
+                title="Seven Day Change: "+coin7day,
+                input_message_content=InputTextMessageContent(coinName+' Seven Day Change: '+coin7day),
                 thumb_url='https://i.imgur.com/ZbPOM53.png'
             ),    
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Summary of '+coinName+'('+coinData['symbol']+')',
-                input_message_content=InputTextMessageContent(summary(querySplitted, coinData)),
+                title='Summary of '+coinName+'('+coinSymbol+')',
+                input_message_content=InputTextMessageContent(
+                    "---"+coinName+" Summary"+'('+coinSymbol+')'+"---"+
+                    "\nPrice: "+coinPrice+
+                    "\nMarket Capitalization: "+coinCap+
+                    "\n1 hour percent change: "+coin1hr+
+                    "\n24 hour percent change: "+coin1day+
+                    "\n7 day percent change: "+coin7day),
                 thumb_url='https://i.imgur.com/t6BPcMR.png'
-            )
+            ),
         ]
     bot.answer_inline_query(update.inline_query.id, results)    
 
-     
+def error(bot, update, error):
+    logger.warning('Update "%s" caused error "%s"' % (update, error))
+
+# def setup(webhook_url=None):
+    # """If webhook_url is not passed, run with long-polling."""
+    # logging.basicConfig(level=logging.WARNING)
+    # if webhook_url:
+        # bot = Bot(TOKEN)
+        # update_queue = Queue()
+        # dp = Dispatcher(bot, update_queue)
+    # else:
+        # updater = Updater(TOKEN)
+        # bot = updater.bot
+        # dp = updater.dispatcher
+        # dp.add_handler(CommandHandler("start", start))
+
+        # # on noncommand i.e message - echo the message on Telegram
+        # dp.add_handler(InlineQueryHandler(inline_crypto))
+        
+        # # log all errors
+        # dp.add_error_handler(error)
+    # # Add your handlers here
+    # if webhook_url:
+        # bot.set_webhook(webhook_url=webhook_url)
+        # thread = Thread(target=dp.start, name='dispatcher')
+        # thread.start()
+        # return update_queue, bot
+    # else:
+        # bot.set_webhook()  # Delete webhook
+        # updater.start_polling()
+        # updater.idle()
+    
 def main():
-    updater = Updater(token='[CENSORED]')
+    updater = Updater(token='491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8')
     dp=updater.dispatcher
     
     #commands to answer
@@ -96,12 +218,17 @@ def main():
     
     #non commands
     dp.add_handler(InlineQueryHandler(inline_crypto))
-
+    
+    #log errors
+    dp.add_error_handler(error)
+    
     #start bot
 
     updater.start_polling()
     #close with ctrl-c
     updater.idle()
+        
     
+
 if __name__=='__main__':
     main()
