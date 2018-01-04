@@ -51,7 +51,7 @@ def getCoinData(coin, currency):
 
     from coinmarketcap import Market
     coinmarketcap=Market()
-    json_data_end=coinmarketcap.ticker(limit=0,convert='USD')
+    json_data_end=coinmarketcap.ticker(limit=0,convert=currency.upper())
     query=coin
     id=query.lower()
     symbol=query.upper()
@@ -59,7 +59,7 @@ def getCoinData(coin, currency):
         # print(index)
         if symbol == json_data_end[index]['symbol'] or id==json_data_end[index]['id']:
             json_data_end=json_data_end[index]
-            break  
+            break
         
     #the result will depend on whether the input was name or symbol
     #The dimensions of the json change depending on that

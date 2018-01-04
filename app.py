@@ -3,10 +3,10 @@ from telegram import InlineQueryResultArticle, InlineQueryResultPhoto, InputText
 
 #this stuff is for the webhook
 import logging
-# from queue import Queue
-# from threading import Thread
-# from telegram import Bot
-# from telegram.ext import Dispatcher, MessageHandler, Filters
+from queue import Queue
+from threading import Thread
+from telegram import Bot
+from telegram.ext import Dispatcher, MessageHandler, Filters
 
 from uuid import uuid4
 from json_api import *
@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# TOKEN='[CENSORED]'
+TOKEN='[CENSORED]'
 
 def start(bot, update):
     bot.send_message(
@@ -33,18 +33,16 @@ def inline_crypto(bot, update):
         if (len(newsQuery)==1):
             newsArticles=news()
         else:
-            # newsArticles=news(newsQuery[1])
             j=0
             for j in (range(len(newsQuery)-2)):
                 newsQuery[1]=newsQuery[1]+' '+newsQuery[2]
                 del newsQuery[2]
             newsArticles=news(newsQuery[1])
-        # newsArticles=news(None if len(newsQuery)==1 else newsQuery[1])
         results=[]
         i=0
         for i in range(len(newsArticles)):
             results.append(InlineQueryResultArticle(id=uuid4(),title=newsArticles[i].title,input_message_content=InputTextMessageContent(newsArticles[i].link),description=newsArticles[i].description,))
-    if ',' in query:
+    elif ',' in query:
         classifiedQuery=classifyQuery(query)
         i=0
         jsonDataList=[]
@@ -115,6 +113,7 @@ def inline_crypto(bot, update):
         ]
     
     else:
+        #puts the query into a class that stores the coin and the currency
         classifiedQuery=classifyQuery(query)
         coinData=getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
         coinName=coinData['name']
@@ -180,55 +179,55 @@ def inline_crypto(bot, update):
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
-# def setup(webhook_url=None):
-    # """If webhook_url is not passed, run with long-polling."""
-    # logging.basicConfig(level=logging.WARNING)
-    # if webhook_url:
-        # bot = Bot(TOKEN)
-        # update_queue = Queue()
-        # dp = Dispatcher(bot, update_queue)
-    # else:
-        # updater = Updater(TOKEN)
-        # bot = updater.bot
-        # dp = updater.dispatcher
-        # dp.add_handler(CommandHandler("start", start))
+def setup(webhook_url=None):
+    """If webhook_url is not passed, run with long-polling."""
+    logging.basicConfig(level=logging.WARNING)
+    if webhook_url:
+        bot = Bot(TOKEN)
+        update_queue = Queue()
+        dp = Dispatcher(bot, update_queue)
+    else:
+        updater = Updater(TOKEN)
+        bot = updater.bot
+        dp = updater.dispatcher
+        dp.add_handler(CommandHandler("start", start))
 
-        # # on noncommand i.e message - echo the message on Telegram
-        # dp.add_handler(InlineQueryHandler(inline_crypto))
+        # on noncommand i.e message - echo the message on Telegram
+        dp.add_handler(InlineQueryHandler(inline_crypto))
         
-        # # log all errors
-        # dp.add_error_handler(error)
-    # # Add your handlers here
-    # if webhook_url:
-        # bot.set_webhook(webhook_url=webhook_url)
-        # thread = Thread(target=dp.start, name='dispatcher')
-        # thread.start()
-        # return update_queue, bot
-    # else:
-        # bot.set_webhook()  # Delete webhook
-        # updater.start_polling()
-        # updater.idle()
+        # log all errors
+        dp.add_error_handler(error)
+    # Add your handlers here
+    if webhook_url:
+        bot.set_webhook(webhook_url=webhook_url)
+        thread = Thread(target=dp.start, name='dispatcher')
+        thread.start()
+        return update_queue, bot
+    else:
+        bot.set_webhook()  # Delete webhook
+        updater.start_polling()
+        updater.idle()
     
-def main():
-    updater = Updater(token='[CENSORED]')
-    dp=updater.dispatcher
+# def main():
+    # updater = Updater(token='491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8')
+    # dp=updater.dispatcher
     
-    #commands to answer
-    dp.add_handler(CommandHandler('start', start))
+    # #commands to answer
+    # dp.add_handler(CommandHandler('start', start))
     
-    #non commands
-    dp.add_handler(InlineQueryHandler(inline_crypto))
+    # #non commands
+    # dp.add_handler(InlineQueryHandler(inline_crypto))
     
-    #log errors
-    dp.add_error_handler(error)
+    # #log errors
+    # dp.add_error_handler(error)
     
-    #start bot
+    # #start bot
 
-    updater.start_polling()
-    #close with ctrl-c
-    updater.idle()
+    # updater.start_polling()
+    # #close with ctrl-c
+    # updater.idle()
         
     
 
 if __name__=='__main__':
-    main()
+    setup()
