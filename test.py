@@ -1,8 +1,8 @@
-# from json_api import *
-# query="bdwa"
-# classified=classifyQuery(query)
-# print(classified.coinQuery,"|||",classified.currency)
-# print(getCoinData(classified.coinQuery[0],classified.currency))
+from json_api import *
+query="bitcoin"
+classified=classifyQuery(query)
+print(classified.coinQuery,"|||",classified.currency)
+print(getCoinData(classified.coinQuery[0],classified.currency))
 # print(getCoinData('bitcoin-cash','eur'))
 # from coinmarketcap import Market
 # coinmarketcap=Market()
