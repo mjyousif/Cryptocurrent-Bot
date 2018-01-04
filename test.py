@@ -1,5 +1,5 @@
 from json_api import *
-query="bitcoin"
+query="bitcoin eur"
 classified=classifyQuery(query)
 print(classified.coinQuery,"|||",classified.currency)
 print(getCoinData(classified.coinQuery[0],classified.currency))

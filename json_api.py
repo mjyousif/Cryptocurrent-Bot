@@ -60,8 +60,8 @@ def getCoinData(coin, currency):
         if symbol == json_data_end[index]['symbol'] or id==json_data_end[index]['id']:
             json_data_end=json_data_end[index]
             break
-    #This if is to check if the json data is one coin or more. If it is >16, then the coin input was not in the json and the list output has everything, which messes up results. Setting the json to none will prevent results from showing up.
-    if len(json_data_end)>16:
+    #This if is to check if the json data is one coin or more. If it is >20, then the coin input was not in the json and the list output has everything, which messes up results. Setting the json to none will prevent results from showing up. 20 was chosen because one coin in a non USD currency will have less than 20 entries, the most for a single coin. If there are more entries, then the json data is not usable.
+    if len(json_data_end)>20:
         json_data_end=None
     #the result will depend on whether the input was name or symbol
     #The dimensions of the json change depending on that
