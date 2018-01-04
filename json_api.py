@@ -56,7 +56,7 @@ def getCoinData(coin, currency):
     id=query.lower()
     symbol=query.upper()
     for index in range(0,len(json_data_end)):
-        print(index)
+        # print(index)
         if symbol == json_data_end[index]['symbol'] or id==json_data_end[index]['id']:
             json_data_end=json_data_end[index]
             break
