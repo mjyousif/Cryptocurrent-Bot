@@ -1,10 +1,8 @@
-from json_api import *
-query="bitcoin eur"
-classified=classifyQuery(query)
-print(classified.coinQuery,"|||",classified.currency)
-print(getCoinData(classified.coinQuery[0],classified.currency))
-# print(getCoinData('bitcoin-cash','eur'))
-# from coinmarketcap import Market
-# coinmarketcap=Market()
-# json_data_end=coinmarketcap.ticker(limit=0,convert='eur')
-# print(json_data_end)z
+# # from json_api import *
+# # query='qcash'
+# # classifiedQuery=classifyQuery(query)
+# # coinData=getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
+# # # print(coinData)
+# # print ('N/A'==coinData['price_usd']=="N/A")
+# # coinPrice=coinData['price_'+classifiedQuery.currency]+" "+(classifiedQuery.currency.upper() if coinData['price_'+classifiedQuery.currency.lower()] !='N/A' else "")
+# # print(coinPrice)

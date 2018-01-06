@@ -50,76 +50,135 @@ def inline_crypto(bot, update):
         for i in range(len(classifiedQuery.coinQuery)):
             jsonDataList.append(getCoinData(classifiedQuery.coinQuery[i],classifiedQuery.currency))
         #stuff that will go in the results, prepared up here because I can't do it in their respective results
-        nameList=""
+        #Ternarys to remove things that wouldn't make sense in certain conditions. Like if the data is 'N/A', I don't want the currency to show
+        #The big loop gets the data in a list which is joined however it needs to be in the results
+        nameList=[]
+        valueList=["Values:"]
+        symbolValueList=[]
+        capList=["Market Caps:"]
+        symbolCapList=[]
+        hourList=["1 Hour Changes:"]
+        symbolHourList=[]
+        dayList=["1 Day Changes:"]
+        symbolDayList=[]
+        weekList=["7 Day Changes:"]               
+        symbolWeekList=[]
         k=0
         for k in range(len(classifiedQuery.coinQuery)):
-            nameList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"), \n"  
-        valueList="Values:\n"
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            valueList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+classifiedQuery.currency.upper()+"\n" 
-        capList="Market Caps:\n"
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            capList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+classifiedQuery.currency.upper()+"\n" 
-        hourList="1 Hour Changes:\n"
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            hourList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_1h']+"%"+"\n"  
-        dayList="1 Day Changes:\n"
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            dayList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_24h']+"%"+"\n"  
-        weekList="7 Day Changes:\n"
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            weekList+=jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_7d']+"%"+"\n"           
+            nameList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+")")  
+            
+            valueList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['price_'+classifiedQuery.currency.lower()] !='N/A' else ""))
+            symbolValueList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['price_'+classifiedQuery.currency.lower()] !='N/A' else "")) 
+            
+            capList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else ""))
+            symbolCapList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else ""))
+            
+            
+            hourList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_1h']+"%")
+            symbolHourList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_1h']+"%")
+            
+            dayList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_24h']+"%")
+            symbolDayList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_24h']+"%")
+            
+            weekList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_7d']+"%")
+            symbolWeekList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_7d']+"%")
+        
         results = [
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=nameList,
-                input_message_content=InputTextMessageContent(nameList),
+                title=', '.join(nameList),
+                input_message_content=InputTextMessageContent('\n'.join(nameList)),
+                thumb_url='https://coinmarketcap.com/static/img/CoinMarketCap.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Values',
-                input_message_content=InputTextMessageContent(valueList),
+                title=classifiedQuery.currency.upper()+' Values',
+                description='|'.join(symbolValueList),
+                input_message_content=InputTextMessageContent('\n'.join(valueList)),
                 thumb_url='https://i.imgur.com/My7IG7r.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title='Market Capitalizations',
-                input_message_content=InputTextMessageContent(capList),
+                title=classifiedQuery.currency.upper()+' Market Capitalizations',
+                description='|'.join(symbolCapList),
+                input_message_content=InputTextMessageContent('\n'.join(capList)),
                 thumb_url='https://i.imgur.com/egncB1b.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="One Hour Changes",
-                input_message_content=InputTextMessageContent(hourList),
+                description='|'.join(symbolHourList),
+                input_message_content=InputTextMessageContent('\n'.join(hourList)),
                 thumb_url='https://i.imgur.com/pza5Xjb.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="One Day Changes",
-                input_message_content=InputTextMessageContent(dayList),
+                description='|'.join(symbolDayList),
+                input_message_content=InputTextMessageContent('\n'.join(dayList)),
                 thumb_url='https://i.imgur.com/98YM0PA.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="Seven Day Changes",
-                input_message_content=InputTextMessageContent(weekList),
+                description='|'.join(symbolWeekList),
+                input_message_content=InputTextMessageContent('\n'.join(weekList)),
                 thumb_url='https://i.imgur.com/ZbPOM53.png'
-            ),   
+            ), 
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title='Summary of '+', '.join(nameList),
+                input_message_content=InputTextMessageContent(
+                    '\n'.join(valueList)+'\n\n'+
+                    '\n'.join(capList)+'\n\n'+
+                    '\n'.join(hourList)+'\n\n'+
+                    '\n'.join(dayList)+'\n\n'+
+                    '\n'.join(weekList)+'\n\n'
+                    ),
+                thumb_url='https://i.imgur.com/t6BPcMR.png'
+            ),            
         ]
-    
+    elif "/" in query:
+        #Format the query to remove spaces that would mess up format
+        query=query.replace(' /','/')
+        query=query.replace('/ ','/')
+        query=query.replace(' ','-')
+        coinList=query.split('/')
+        coin1Data=getCoinData(coinList[0],'usd')
+        coin2Data=getCoinData(coinList[1],'usd')
+        coin1Name=coin1Data['name']
+        coin1Symbol=coin1Data['symbol']
+        coin1Value=coin1Data['price_usd']
+        coin2Name=coin2Data['name']
+        coin2Symbol=coin2Data['symbol']
+        coin2Value=coin2Data['price_usd']
+        #If the value for the coin is not available, return none so that nothing is returned to the user.
+        if coin1Value=='N/A' or coin2Value=='N/A':
+            coin1InCoin2=None
+        #Do some manipulation. Turn the string from the data into float to do the math to get the value and return to string. Limit the value to 8 places past the decimal. Comma separate the left side of the number.
+        else:
+            coin1InCoin2=str(float(coin1Value.replace(',',''))/float(coin2Value.replace(',','')))
+            coin1InCoin2=coin1InCoin2[:coin1InCoin2.find('.')+9]
+            coin1InCoin2="{:,}".format(float(coin1InCoin2[:coin1InCoin2.find('.')]+'.'+coin1InCoin2[coin1InCoin2.find('.')+1:]))
+
+        results=[
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title=coin1Name+' ('+coin1Symbol+') / '+coin2Name+' ('+coin2Symbol+')',
+                description=coin1InCoin2+' '+coin1Symbol+'/'+coin2Symbol,
+                input_message_content=InputTextMessageContent(coin1InCoin2+' '+coin1Name+' ('+coin1Symbol+') / '+coin2Name+' ('+coin2Symbol+')'),
+                thumb_url='https://i.imgur.com/My7IG7r.png'
+            ),
+        ]
+        
     else:
         #puts the query into a class that stores the coin and the currency
         classifiedQuery=classifyQuery(query)
         coinData=getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
         coinName=coinData['name']
         coinSymbol=coinData['symbol']
-        coinPrice=coinData['price_'+classifiedQuery.currency]+" "+classifiedQuery.currency.upper()
-        coinCap=coinData['market_cap_'+classifiedQuery.currency]+" "+classifiedQuery.currency.upper()
+        coinPrice=coinData['price_'+classifiedQuery.currency]+" "+(classifiedQuery.currency.upper() if coinData['price_'+classifiedQuery.currency.lower()] !='N/A' else "")
+        coinCap=coinData['market_cap_'+classifiedQuery.currency]+" "+(classifiedQuery.currency.upper() if coinData['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else "")
         coin1hr=coinData['percent_change_1h']+"%"
         coin1day=coinData['percent_change_24h']+"%"
         coin7day=coinData['percent_change_7d']+"%"

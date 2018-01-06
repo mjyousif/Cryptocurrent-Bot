@@ -31,17 +31,6 @@ def prettyANDprecise(strNum):
         pApOutput=(str(numStrFormatLeft[0])+'.'+numStrSplit[1])
     return pApOutput
     
-    
-    
-def jsonSearch(url, targetSymbol):
-    json_data=requests.get(url).json()
-    index=0
-    for index in range(len(json_data)): #loops through entire coinmarketcap ticker until symbol found
-        print (index)
-        if targetSymbol.upper()==json_data[index]["symbol"]:
-            json_data_end=json_data[index]
-            return json_data_end    
-    
 #-------------------------------------------------------------------
 #Function to get the json for the coin
 def getCoinData(coin, currency):
@@ -92,8 +81,8 @@ def getCoinData(coin, currency):
         json_data_end[currentMarketCap]=prettyANDprecise(json_data_end[currentMarketCap])
     
     #coinmarketcap info has a decimal at the end of market cap for some reason. this gets rid of that
-    json_data_end['market_cap_usd']=json_data_end['market_cap_usd'].split('.')
-    json_data_end['market_cap_usd']=json_data_end['market_cap_usd'][0]
+    json_data_end[currentMarketCap]=json_data_end[currentMarketCap].split('.')
+    json_data_end[currentMarketCap]=json_data_end[currentMarketCap][0]
                 
     if (json_data_end[currentVolume]==None):
         json_data_end[currentVolume]='N/A'
