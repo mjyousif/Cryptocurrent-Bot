@@ -233,7 +233,7 @@ def inline_crypto(bot, update):
                 thumb_url='https://i.imgur.com/t6BPcMR.png'
             ),
         ]
-    bot.answer_inline_query(update.inline_query.id, results)    
+    bot.answer_inline_query(update.inline_query.id, results, cache_time=0)    
 
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
