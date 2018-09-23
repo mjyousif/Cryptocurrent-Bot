@@ -1,4 +1,5 @@
 requests
+cryptography
 python-telegram-bot
 feedparser
 sorter
