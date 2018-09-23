@@ -1,5 +1,6 @@
-from telegram.ext import Updater, CommandHandler, InlineQueryHandler
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler, CallbackQueryHandler
 from telegram import InlineQueryResultArticle, InlineQueryResultPhoto, InputTextMessageContent, Message
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 #this stuff is for the webhook
 import logging
@@ -11,6 +12,7 @@ from telegram.ext import Dispatcher, MessageHandler, Filters
 from uuid import uuid4
 from json_api import *
 from feedReader import *
+from sorter import *
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -19,11 +21,44 @@ logger = logging.getLogger(__name__)
 TOKEN='[CENSORED]'
 
 def start(bot, update):
-    bot.send_message(
-                    chat_id=update.message.chat_id, 
-                    text=('Use me inline by tagging me and typing a crypto currency!')
-                    )
-    
+    try:
+        if "_" in (update.message.text.split(" ")[1]):
+            #split and fix the query that was passed to be usable
+            querySplit=update.message.text.split(" ")[1].split("_")
+            query=",".join(querySplit[:-1])+" "+querySplit[-1]
+            #present the inline keyboard
+            keyboard = [
+                [
+                 InlineKeyboardButton("Alphabetical", switch_inline_query=query+" "+"alpha")
+                 ],
+                [
+                 InlineKeyboardButton("Value", switch_inline_query=query+" "+"price"),
+                 InlineKeyboardButton("Market Cap", switch_inline_query=query+" "+"mktcap")
+                 ],
+                [
+                 InlineKeyboardButton("Hour Change", switch_inline_query=query+" "+"1h"),
+                 InlineKeyboardButton("Day Change", switch_inline_query=query+" "+"1d"),
+                 InlineKeyboardButton("Week Change", switch_inline_query=query+" "+"7d")
+                ]
+                ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            # update.message.reply_text('Please choose a sorting preference:',reply_markup=reply_markup)
+            bot.send_message(chat_id=update.message.chat_id,text='Please choose a sorting preference:',reply_markup=reply_markup)
+    except: 
+        bot.send_message(
+                        chat_id=update.message.chat_id, 
+                        text=('Use me inline by tagging me and typing a crypto currency!')
+                        # text=update.message.text
+                        )
+                        
+def button(bot, update):
+    query = update.inline_query
+    bot.edit_message_text(text="Selected option",
+                          chat_id=query.message.chat_id,
+                          message_id=query.message.message_id)
+
+
+                        
 def inline_crypto(bot, update):
     query = update.inline_query.query
     if not query:
@@ -43,16 +78,12 @@ def inline_crypto(bot, update):
         for i in range(len(newsArticles)):
             results.append(InlineQueryResultArticle(id=uuid4(),title=newsArticles[i].title,input_message_content=InputTextMessageContent(newsArticles[i].link),description=newsArticles[i].description,))
     elif ',' in query:
-        classifiedQuery=classifyQuery(query)
-        i=0
-        jsonDataList=[]
-        #this loop saves all the data in a list to be used in parallel to the coinQuery list
-        for i in range(len(classifiedQuery.coinQuery)):
-            jsonDataList.append(getCoinData(classifiedQuery.coinQuery[i],classifiedQuery.currency))
+        cryptoList=classifyQuery(query)
         #stuff that will go in the results, prepared up here because I can't do it in their respective results
         #Ternarys to remove things that wouldn't make sense in certain conditions. Like if the data is 'N/A', I don't want the currency to show
         #The big loop gets the data in a list which is joined however it needs to be in the results
         nameList=[]
+        symbolList=[]
         valueList=["Values:"]
         symbolValueList=[]
         capList=["Market Caps:"]
@@ -63,43 +94,45 @@ def inline_crypto(bot, update):
         symbolDayList=[]
         weekList=["7 Day Changes:"]               
         symbolWeekList=[]
-        k=0
-        for k in range(len(classifiedQuery.coinQuery)):
-            nameList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+")")  
-            
-            valueList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['price_'+classifiedQuery.currency.lower()] !='N/A' else ""))
-            symbolValueList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['price_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['price_'+classifiedQuery.currency.lower()] !='N/A' else "")) 
-            
-            capList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else ""))
-            symbolCapList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()]+" "+(classifiedQuery.currency.upper() if jsonDataList[k]['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else ""))
-            
-            
-            hourList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_1h']+"%")
-            symbolHourList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_1h']+"%")
-            
-            dayList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_24h']+"%")
-            symbolDayList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_24h']+"%")
-            
-            weekList.append(jsonDataList[k]['name']+" ("+jsonDataList[k]['symbol']+"): "+jsonDataList[k]['percent_change_7d']+"%")
-            symbolWeekList.append(jsonDataList[k]['symbol']+": "+jsonDataList[k]['percent_change_7d']+"%")
         
+        k=0
+        for k in range(len(cryptoList)):
+            nameList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+")")  
+            symbolList.append(cryptoList[k].symbol)
+            
+            valueList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+"): "+cryptoList[k].price+" "+(cryptoList[k].currency if cryptoList[k].price !='N/A' else ""))
+            symbolValueList.append(cryptoList[k].symbol+": "+cryptoList[k].price+" "+(cryptoList[k].currency if cryptoList[k].price !='N/A' else "")) 
+            
+            capList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+"): "+cryptoList[k].market_cap+" "+(cryptoList[k].currency if cryptoList[k].market_cap!='N/A' else ""))
+            symbolCapList.append(cryptoList[k].symbol+": "+cryptoList[k].market_cap+" "+(cryptoList[k].currency if cryptoList[k].market_cap !='N/A' else ""))
+            
+            hourList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+"): "+cryptoList[k].percent_change_1h+"%")
+            symbolHourList.append(cryptoList[k].symbol+": "+cryptoList[k].percent_change_1h+"%")
+            
+            dayList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+"): "+cryptoList[k].percent_change_24h+"%")
+            symbolDayList.append(cryptoList[k].symbol+": "+cryptoList[k].percent_change_24h+"%")
+            
+            weekList.append(cryptoList[k].name+" ("+cryptoList[k].symbol+"): "+cryptoList[k].percent_change_7d+"%")
+            symbolWeekList.append(cryptoList[k].symbol+": "+cryptoList[k].percent_change_7d+"%")
+            
+        # cleanQuery="_".join(symbolList)+"_"+classifiedQuery.currency
         results = [
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=', '.join(nameList),
                 input_message_content=InputTextMessageContent('\n'.join(nameList)),
-                thumb_url='https://coinmarketcap.com/static/img/CoinMarketCap.png'
+                thumb_url='https://i.imgur.com/R4ybbnJ.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=classifiedQuery.currency.upper()+' Values',
+                title=cryptoList[0].currency+' Values',
                 description='|'.join(symbolValueList),
                 input_message_content=InputTextMessageContent('\n'.join(valueList)),
                 thumb_url='https://i.imgur.com/My7IG7r.png'
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=classifiedQuery.currency.upper()+' Market Capitalizations',
+                title=cryptoList[0].currency+' Market Capitalizations',
                 description='|'.join(symbolCapList),
                 input_message_content=InputTextMessageContent('\n'.join(capList)),
                 thumb_url='https://i.imgur.com/egncB1b.png'
@@ -138,20 +171,19 @@ def inline_crypto(bot, update):
                 thumb_url='https://i.imgur.com/t6BPcMR.png'
             ),            
         ]
+        bot.answer_inline_query(update.inline_query.id, results)#, switch_pm_text='Click for sorted results',switch_pm_parameter=cleanQuery)  
     elif "/" in query:
         #Format the query to remove spaces that would mess up format
-        query=query.replace(' /','/')
-        query=query.replace('/ ','/')
-        query=query.replace(' ','-')
-        coinList=query.split('/')
-        coin1Data=getCoinData(coinList[0],'usd')
-        coin2Data=getCoinData(coinList[1],'usd')
-        coin1Name=coin1Data['name']
-        coin1Symbol=coin1Data['symbol']
-        coin1Value=coin1Data['price_usd']
-        coin2Name=coin2Data['name']
-        coin2Symbol=coin2Data['symbol']
-        coin2Value=coin2Data['price_usd']
+        query=query.replace('/',',')
+        cryptoList=classifyQuery(query)
+        coin1Data=cryptoList[0]
+        coin2Data=cryptoList[1]
+        coin1Name=cryptoList[0].name
+        coin1Symbol=cryptoList[0].symbol
+        coin1Value=cryptoList[0].price
+        coin2Name=cryptoList[1].name
+        coin2Symbol=cryptoList[1].symbol
+        coin2Value=cryptoList[1].price
         #If the value for the coin is not available, return none so that nothing is returned to the user.
         if coin1Value=='N/A' or coin2Value=='N/A':
             coin1InCoin2=None
@@ -172,23 +204,26 @@ def inline_crypto(bot, update):
         ]
         
     else:
+        
         #puts the query into a class that stores the coin and the currency
-        classifiedQuery=classifyQuery(query)
-        coinData=getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
-        coinName=coinData['name']
-        coinSymbol=coinData['symbol']
-        coinPrice=coinData['price_'+classifiedQuery.currency]+" "+(classifiedQuery.currency.upper() if coinData['price_'+classifiedQuery.currency.lower()] !='N/A' else "")
-        coinCap=coinData['market_cap_'+classifiedQuery.currency]+" "+(classifiedQuery.currency.upper() if coinData['market_cap_'+classifiedQuery.currency.lower()] !='N/A' else "")
-        coin1hr=coinData['percent_change_1h']+"%"
-        coin1day=coinData['percent_change_24h']+"%"
-        coin7day=coinData['percent_change_7d']+"%"
+        coinList=classifyQuery(query)
+        #getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
+        coinID=coinList[0].id
+        coinName=coinList[0].name
+        coinSymbol=coinList[0].symbol
+        coinPrice=coinList[0].price+' '+coinList[0].currency
+        coinCap=coinList[0].market_cap+' '+coinList[0].currency
+        coin1hr=coinList[0].percent_change_1h+"%"
+        coin1day=coinList[0].percent_change_24h+"%"
+        coin7day=coinList[0].percent_change_7d+"%"
+        imageURL='https://s2.coinmarketcap.com/static/img/coins/128x128/'+str(coinID)+'.png'
         results = [
             InlineQueryResultPhoto(
                 id=uuid4(),
-                photo_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+coinData['id'] +'.png'),
-                thumb_url=('https://files.coinmarketcap.com/static/img/coins/128x128/'+coinData['id'] +'.png'),
-                title=coinData['name']+'('+coinSymbol+')',
-                caption=coinData['name']+' ('+coinSymbol+')',
+                photo_url=(imageURL),
+                thumb_url=(imageURL),
+                title=coinName+'('+coinSymbol+')',
+                caption=coinName+' ('+coinSymbol+')',
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -233,7 +268,7 @@ def inline_crypto(bot, update):
                 thumb_url='https://i.imgur.com/t6BPcMR.png'
             ),
         ]
-    bot.answer_inline_query(update.inline_query.id, results,cache_time=1)    
+    bot.answer_inline_query(update.inline_query.id, results,cache_time=300)    
 
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
@@ -253,7 +288,7 @@ def setup(webhook_url=None):
 
         # on noncommand i.e message - echo the message on Telegram
         dp.add_handler(InlineQueryHandler(inline_crypto))
-        
+        dp.add_handler(InlineQueryHandler(button))
         # log all errors
         dp.add_error_handler(error)
     # Add your handlers here
@@ -266,27 +301,6 @@ def setup(webhook_url=None):
         bot.set_webhook()  # Delete webhook
         updater.start_polling()
         updater.idle()
-    
-# def main():
-    # updater = Updater(token='491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8')
-    # dp=updater.dispatcher
-    
-    # #commands to answer
-    # dp.add_handler(CommandHandler('start', start))
-    
-    # #non commands
-    # dp.add_handler(InlineQueryHandler(inline_crypto))
-    
-    # #log errors
-    # dp.add_error_handler(error)
-    
-    # #start bot
-
-    # updater.start_polling()
-    # #close with ctrl-c
-    # updater.idle()
-        
-    
 
 if __name__=='__main__':
     setup()
