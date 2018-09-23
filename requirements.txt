@@ -1,6 +1,5 @@
 requests
 setuptools
-cryptography
 python-telegram-bot
 feedparser
 sorter
