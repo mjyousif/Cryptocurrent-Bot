@@ -25,8 +25,9 @@ def main():
     
     # sortTypeDict={"name":"name","price":"price","mktcap":"market_cap","1h":"percent_change_1h","1d":"percent_change_24h","7d":"percent_change_7d"}
     # print(sortTypeDict["name"])
-    delta=classifyQuery("bitcoin, litecoin, ethereum, putincoin price")
-    print (delta[1].price)
+    delta=classifyQuery("top")
+    print (delta[0].id)
+    
 
 if __name__=='__main__':
     main()

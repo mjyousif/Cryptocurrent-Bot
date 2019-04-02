@@ -9,7 +9,8 @@ class coinClass:
         self.sortType=sortType
         
 class cryptoClass:
-        
+        #NOTE: THE IF STATEMENTS HERE ARE NOT NEEDED ANYMORE 
+        #CMC DOES NOT HAVE THE N/A BUILT IN, THEY JUST USE 0
     def __init__(self, coinInfo, currency):
         #Will have access to : id,name, symbol, price, market_cap, percent_change_1h, percent_change_24h, percent_change_7d, currency
     
@@ -57,7 +58,9 @@ class cryptoClass:
             self.percent_change_7d=str(coinInfo['quote'][currency]['percent_change_7d'])
     #Make the price have commas and appropriate decimals
     def priceCommaPrecision(self, price):
-        priceStr=str(price)
+        if(price==0):       #unavailable prices are 0, so i will return N/A
+            return 'N/A'
+        priceStr=str(price) #if the price is available, add commas where desirable       
         priceStr=priceStr.split('.')
         if(price>=1.00):
             priceStr[1]=priceStr[1][0:2]

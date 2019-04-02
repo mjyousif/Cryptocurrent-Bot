@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 TOKEN='[CENSORED]'
 
 def start(bot, update):
-    try:
+    try: #this is what happens when user clicks the "sort button" in chat... at least what they should see
         if "_" in (update.message.text.split(" ")[1]):
             #split and fix the query that was passed to be usable
             querySplit=update.message.text.split(" ")[1].split("_")
@@ -211,12 +211,12 @@ def inline_crypto(bot, update):
         coinID=coinList[0].id
         coinName=coinList[0].name
         coinSymbol=coinList[0].symbol
-        coinPrice=coinList[0].price+' '+coinList[0].currency
-        coinCap=coinList[0].market_cap+' '+coinList[0].currency
-        coin1hr=coinList[0].percent_change_1h+"%"
-        coin1day=coinList[0].percent_change_24h+"%"
-        coin7day=coinList[0].percent_change_7d+"%"
-        imageURL='https://s2.coinmarketcap.com/static/img/coins/128x128/'+str(coinID)+'.png'
+        coinPrice=coinList[0].price+' '+(coinList[0].currency if coinList[0].price !='N/A' else "")
+        coinCap=coinList[0].market_cap+' '+(coinList[0].currency if coinList[0].market_cap !='N/A' else "")
+        coin1hr=coinList[0].percent_change_1h+('%' if coinList[0].percent_change_1h !='N/A' else "")
+        coin1day=coinList[0].percent_change_24h+('%' if coinList[0].percent_change_24h !='N/A' else "")
+        coin7day=coinList[0].percent_change_7d+('%' if coinList[0].percent_change_7d !='N/A' else "")
+        imageURL='https://s2.coinmarketcap.com/static/img/coins/200x200/'+str(coinID)+'.png'
         results = [
             InlineQueryResultPhoto(
                 id=uuid4(),
