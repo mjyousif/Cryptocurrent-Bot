@@ -24,18 +24,8 @@ This functionality allows the user to get information about several coins in one
 
 If the user so desires, they can enter a currency code from the above list of accepted currencies and get the information in that currency.
 
-All information for this functionality is retrieved from https://api.coinmarketcap.com/v1/ticker/
+All information for this functionality is retrieved from the CoinMarketCap Pro API.
 
-### Crypto Currency News
-In order to view news about crypto currencies, enter the following
-
-`<@CryptoCurrent_bot news [tag]>`
-
-Without entering a tag, the bot will display the top 5 articles it retrieved. 
-
-Entering a tag will provide up to 5 articles that are tagged with that word. For example, one might enter "bitcoin" and the results will be ones tagged with "Bitcoin". Case does not matter.
-
-All information for this functionality is retrieved from https://www.coindesk.com/feed/
 
 ## Credits
 
