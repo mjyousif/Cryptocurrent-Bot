@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  cryptobot:
+    build: .
+    container_name: cryptocurrent-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+    volumes:
+      - ./coinmarketcap_cache.sqlite:/app/coinmarketcap_cache.sqlite
+    env_file:
+      - .env
+

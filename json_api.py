@@ -1,4 +1,5 @@
 import requests
+import os
 from sorter import *
 #Stuff to deal with multiple coins
 class coinClass:
@@ -103,7 +104,8 @@ def classifyQuery(query):
     
     #Find the ID
     idList=[]
-    listings=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/map', headers={'X-CMC_PRO_API_KEY':'[CENSORED]'})
+    api_key = os.getenv('COINMARKETCAP_API_KEY', '[CENSORED]')
+    listings=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/map', headers={'X-CMC_PRO_API_KEY':api_key})
     listings=listings.json()['data']
     #gets ID from map
     for coin in coinList:
@@ -114,7 +116,7 @@ def classifyQuery(query):
     idListString=(','.join(str(x) for x in idList))
     #Get the specific information
     currency=currency.upper()
-    coinInfo=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest', params={'id':idListString, 'convert':currency},headers={'X-CMC_PRO_API_KEY':'[CENSORED]'})
+    coinInfo=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest', params={'id':idListString, 'convert':currency},headers={'X-CMC_PRO_API_KEY':api_key})
     coinInfoList=[]
     for coinID in idList:
         coinInfoList.append(coinInfo.json()['data'][str(coinID)])
