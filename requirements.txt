@@ -3,3 +3,4 @@ setuptools
 python-telegram-bot==10.1.0
 feedparser
 sorter
+black

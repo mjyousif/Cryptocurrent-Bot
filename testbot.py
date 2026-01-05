@@ -25,8 +25,9 @@ import logging
 from telegram import ChosenInlineResult
 
 # Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,29 +36,23 @@ logger = logging.getLogger(__name__)
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text("Hi!")
 
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text("Help!")
 
 
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
     # secondRound=False
-    results = [
-        ChosenInlineResult(
-            result_id=uuid4(),
-            url='coinmarketcap.com'
-            )]
+    results = [ChosenInlineResult(result_id=uuid4(), url="coinmarketcap.com")]
 
-    bot.answer_inline_query(update.inline_query.id, results,cache_time=1) 
+    bot.answer_inline_query(update.inline_query.id, results, cache_time=1)
 
 
-    
-    
 def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
@@ -65,7 +60,7 @@ def error(bot, update, error):
 
 def main():
     # Create the Updater and pass it your bot's token.
-    updater = Updater('491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8')
+    updater = Updater("491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8")
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
@@ -89,5 +84,5 @@ def main():
     updater.idle()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

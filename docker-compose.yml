@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   cryptobot:
@@ -13,4 +13,3 @@ services:
       - ./coinmarketcap_cache.sqlite:/app/coinmarketcap_cache.sqlite
     env_file:
       - .env
-

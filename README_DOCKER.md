@@ -12,6 +12,7 @@ This guide explains how to run the CryptoCurrent bot using Docker.
 ### Using Docker Compose (Recommended)
 
 1. **Create a `.env` file** in the project root with your credentials:
+
    ```
    TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
    COINMARKETCAP_API_KEY=your_coinmarketcap_api_key_here
@@ -19,11 +20,13 @@ This guide explains how to run the CryptoCurrent bot using Docker.
    ```
 
 2. **Build and run the container**:
+
    ```bash
    docker-compose up -d
    ```
 
 3. **View logs**:
+
    ```bash
    docker-compose logs -f
    ```
@@ -36,11 +39,13 @@ This guide explains how to run the CryptoCurrent bot using Docker.
 ### Using Docker directly
 
 1. **Build the image**:
+
    ```bash
    docker build -t cryptocurrent-bot .
    ```
 
 2. **Run the container**:
+
    ```bash
    docker run -d \
      --name cryptocurrent-bot \
@@ -52,6 +57,7 @@ This guide explains how to run the CryptoCurrent bot using Docker.
    ```
 
 3. **View logs**:
+
    ```bash
    docker logs -f cryptocurrent-bot
    ```
@@ -73,4 +79,3 @@ This guide explains how to run the CryptoCurrent bot using Docker.
 - The SQLite cache file is persisted using a volume mount to preserve data between container restarts
 - The container runs as a non-root user for security
 - The container will automatically restart unless stopped manually
-
