@@ -52,11 +52,115 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # This handler seems unused/incomplete - keeping for compatibility
-    if update.callback_query:
-        await update.callback_query.answer()
-        if update.callback_query.message:
-            await update.callback_query.edit_message_text(text="Selected option")
+    if not update.callback_query:
+        return
+
+    data_payload = update.callback_query.data or ""
+
+    # Handle AI summary callbacks: format: ai_summary:<coin_id>:<currency>
+    if data_payload.startswith("ai_summary:"):
+        # Acknowledge the callback (shows a small popup)
+        await update.callback_query.answer("Generating AI summary...")
+        parts = data_payload.split(":")
+        if len(parts) < 3:
+            await update.callback_query.edit_message_text(
+                "Invalid AI summary request data."
+            )
+            return
+        coin_id = parts[1]
+        currency = parts[2]
+
+        try:
+            # Fetch latest quote from CoinMarketCap
+            from data.coinmarketcap import CoinMarketCapClient, parse_coin_info
+            from data.google_ai import generate_text, GoogleAIError
+
+            client = CoinMarketCapClient()
+            resp = client.get_quotes([int(coin_id)], currency)
+            if "data" not in resp or str(coin_id) not in resp["data"]:
+                await update.callback_query.edit_message_text(
+                    "Unable to fetch coin data for AI summary."
+                )
+                return
+
+            quote = parse_coin_info(resp["data"][str(coin_id)], currency)
+
+            prompt = (
+                f"Write a bombastic and truthful 2-3 sentence market summary for {quote.name} ({quote.symbol}). "
+                f"Use the data below and be fun and informational.\n"
+                f"Price: {quote.price} {quote.currency}\n"
+                f"Market cap: {quote.market_cap} {quote.currency}\n"
+                f"1h change: {quote.percent_change_1h}%\n"
+                f"24h change: {quote.percent_change_24h}%\n"
+                f"7d change: {quote.percent_change_7d}%\n"
+                f"Do speculate (either way) and provide investment advice."
+            )
+
+            # Telegram MarkdownV2 examples to include in the instruction so the LLM outputs compatible markup
+            formatting_notes = (
+                "Do not use any formatting, return plain text and emojis only."
+            )
+
+            full_prompt = prompt + "\n\n" + formatting_notes
+
+            try:
+                generated = generate_text(
+                    full_prompt, temperature=0.2, max_output_tokens=120
+                )
+            except GoogleAIError as e:
+                await update.callback_query.edit_message_text(
+                    f"AI generation failed: {e}"
+                )
+                return
+
+            # Log the generated AI response (truncated to 300 chars)
+            try:
+                log_preview = (
+                    generated if len(generated) <= 300 else generated[:300] + "..."
+                )
+            except Exception:
+                log_preview = "<unavailable>"
+            logger.info(
+                "AI summary generated for %s (id=%s): %s",
+                quote.name,
+                coin_id,
+                log_preview,
+            )
+
+            # Edit the original message with the generated text, but avoid editing if content is identical
+            current_msg = update.callback_query.message
+            try:
+                if current_msg and getattr(current_msg, "text", None) == generated:
+                    # Message already has same content; notify user and skip edit
+                    await update.callback_query.answer("Already up to date.")
+                else:
+                    await update.callback_query.edit_message_text(generated)
+            except Exception as exc:
+                # Ignore 'Message is not modified' errors (no change)
+                if "Message is not modified" in str(exc):
+                    logger.info("Skipping edit; message already has same content.")
+                    await update.callback_query.answer("Already up to date.")
+                else:
+                    logger.exception("Failed to edit message: %s", exc)
+                    try:
+                        await update.callback_query.edit_message_text(
+                            "Failed to post AI summary due to formatting issues."
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Failed to post fallback error message for AI summary"
+                        )
+        except Exception as exc:
+            logger.exception("AI summary callback failed: %s", exc)
+            await update.callback_query.edit_message_text(
+                "Failed to generate AI summary. Please try again later."
+            )
+        return
+
+    # Default fallback behaviour for other callbacks
+    await update.callback_query.answer()
+    if update.callback_query.message:
+        await update.callback_query.edit_message_text(text="Selected option")
 
 
 async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

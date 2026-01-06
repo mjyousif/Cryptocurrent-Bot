@@ -9,6 +9,8 @@ from telegram import (
     InlineQueryResultArticle,
     InlineQueryResultPhoto,
     InputTextMessageContent,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
 )
 
 logger = logging.getLogger(__name__)
@@ -210,6 +212,25 @@ def _build_single_coin_results(coin):
                 + coin1day
                 + "\n7 day percent change: "
                 + coin7day
+            ),
+            thumbnail_url="https://i.imgur.com/t6BPcMR.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="AI summary",
+            description="Generate an AI-written concise summary for this coin",
+            input_message_content=InputTextMessageContent(
+                f"AI summary for {coinName} ({coinSymbol}) - press the button below to generate an AI-written summary."
+            ),
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "AI summary",
+                            callback_data=f"ai_summary:{coinID}:{coin.currency}",
+                        )
+                    ]
+                ]
             ),
             thumbnail_url="https://i.imgur.com/t6BPcMR.png",
         ),

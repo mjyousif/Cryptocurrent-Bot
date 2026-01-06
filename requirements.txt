@@ -5,3 +5,4 @@ feedparser
 sorter
 black
 python-dotenv
+google-genai
