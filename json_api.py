@@ -166,6 +166,7 @@ def classifyQuery(query):
     listings = listings.json()["data"]
     # gets ID from map
     for coin in coinList:
+        found = False
         for x in range(0, len(listings)):
             if (
                 coin == listings[x]["name"].lower()
@@ -173,7 +174,16 @@ def classifyQuery(query):
                 or coin == listings[x]["slug"].lower()
             ):
                 idList.append(listings[x]["id"])
+                found = True
                 break
+        if not found:
+            # Skip coins that weren't found
+            continue
+
+    # If no coins were found, return empty list
+    if not idList:
+        return []
+
     idListString = ",".join(str(x) for x in idList)
     # Get the specific information
     currency = currency.upper()
@@ -182,12 +192,23 @@ def classifyQuery(query):
         params={"id": idListString, "convert": currency},
         headers={"X-CMC_PRO_API_KEY": api_key},
     )
+    coinInfoResponse = coinInfo.json()
+
+    # Check if API returned an error
+    if "data" not in coinInfoResponse:
+        return []
+
     coinInfoList = []
     for coinID in idList:
-        coinInfoList.append(coinInfo.json()["data"][str(coinID)])
+        coinIDStr = str(coinID)
+        if coinIDStr in coinInfoResponse["data"]:
+            coinInfoList.append(coinInfoResponse["data"][coinIDStr])
+        else:
+            # Skip coins that aren't in the response
+            continue
 
-    for i in range(len(coinList)):
-        cryptoList.append(cryptoClass(coinInfoList[i], currency))
+    for coinInfoItem in coinInfoList:
+        cryptoList.append(cryptoClass(coinInfoItem, currency))
     cryptoList = valueSorter(cryptoList, sortType)
 
     return cryptoList

@@ -123,6 +123,10 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
     elif "," in query:
         cryptoList = classifyQuery(query)
+        # If no coins were found, return empty results
+        if not cryptoList:
+            await update.inline_query.answer([])
+            return
         # stuff that will go in the results, prepared up here because I can't do it in their respective results
         # Ternarys to remove things that wouldn't make sense in certain conditions. Like if the data is 'N/A', I don't want the currency to show
         # The big loop gets the data in a list which is joined however it needs to be in the results
@@ -220,42 +224,42 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 id=uuid4(),
                 title=", ".join(nameList),
                 input_message_content=InputTextMessageContent("\n".join(nameList)),
-                thumb_url="https://i.imgur.com/R4ybbnJ.png",
+                thumbnail_url="https://i.imgur.com/R4ybbnJ.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=cryptoList[0].currency + " Values",
                 description="|".join(symbolValueList),
                 input_message_content=InputTextMessageContent("\n".join(valueList)),
-                thumb_url="https://i.imgur.com/My7IG7r.png",
+                thumbnail_url="https://i.imgur.com/My7IG7r.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title=cryptoList[0].currency + " Market Capitalizations",
                 description="|".join(symbolCapList),
                 input_message_content=InputTextMessageContent("\n".join(capList)),
-                thumb_url="https://i.imgur.com/egncB1b.png",
+                thumbnail_url="https://i.imgur.com/egncB1b.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="One Hour Changes",
                 description="|".join(symbolHourList),
                 input_message_content=InputTextMessageContent("\n".join(hourList)),
-                thumb_url="https://i.imgur.com/pza5Xjb.png",
+                thumbnail_url="https://i.imgur.com/pza5Xjb.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="One Day Changes",
                 description="|".join(symbolDayList),
                 input_message_content=InputTextMessageContent("\n".join(dayList)),
-                thumb_url="https://i.imgur.com/98YM0PA.png",
+                thumbnail_url="https://i.imgur.com/98YM0PA.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
                 title="Seven Day Changes",
                 description="|".join(symbolWeekList),
                 input_message_content=InputTextMessageContent("\n".join(weekList)),
-                thumb_url="https://i.imgur.com/ZbPOM53.png",
+                thumbnail_url="https://i.imgur.com/ZbPOM53.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -272,7 +276,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                     + "\n".join(weekList)
                     + "\n\n"
                 ),
-                thumb_url="https://i.imgur.com/t6BPcMR.png",
+                thumbnail_url="https://i.imgur.com/t6BPcMR.png",
             ),
         ]
         await update.inline_query.answer(results)
@@ -280,6 +284,10 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         # Format the query to remove spaces that would mess up format
         query = query.replace("/", ",")
         cryptoList = classifyQuery(query)
+        # Need at least 2 coins for division
+        if len(cryptoList) < 2:
+            await update.inline_query.answer([])
+            return
         coin1Data = cryptoList[0]
         coin2Data = cryptoList[1]
         coin1Name = cryptoList[0].name
@@ -329,7 +337,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                     + coin2Symbol
                     + ")"
                 ),
-                thumb_url="https://i.imgur.com/My7IG7r.png",
+                thumbnail_url="https://i.imgur.com/My7IG7r.png",
             ),
         ]
         await update.inline_query.answer(results)
@@ -339,6 +347,10 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
         # puts the query into a class that stores the coin and the currency
         coinList = classifyQuery(query)
+        # If no coins were found, return empty results
+        if not coinList:
+            await update.inline_query.answer([])
+            return
         # getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
         coinID = coinList[0].id
         coinName = coinList[0].name
@@ -371,7 +383,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             InlineQueryResultPhoto(
                 id=uuid4(),
                 photo_url=(imageURL),
-                thumb_url=(imageURL),
+                thumbnail_url=(imageURL),
                 title=coinName + "(" + coinSymbol + ")",
                 caption=coinName + " (" + coinSymbol + ")",
             ),
@@ -381,7 +393,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 input_message_content=InputTextMessageContent(
                     coinName + ": " + coinPrice
                 ),
-                thumb_url="https://i.imgur.com/My7IG7r.png",
+                thumbnail_url="https://i.imgur.com/My7IG7r.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -389,7 +401,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 input_message_content=InputTextMessageContent(
                     coinName + " Market Capitalization: " + coinCap
                 ),
-                thumb_url="https://i.imgur.com/egncB1b.png",
+                thumbnail_url="https://i.imgur.com/egncB1b.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -397,7 +409,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 input_message_content=InputTextMessageContent(
                     coinName + " One Hour Change: " + coin1hr
                 ),
-                thumb_url="https://i.imgur.com/pza5Xjb.png",
+                thumbnail_url="https://i.imgur.com/pza5Xjb.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -405,7 +417,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 input_message_content=InputTextMessageContent(
                     coinName + " One Day Change: " + coin1day
                 ),
-                thumb_url="https://i.imgur.com/98YM0PA.png",
+                thumbnail_url="https://i.imgur.com/98YM0PA.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -413,7 +425,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 input_message_content=InputTextMessageContent(
                     coinName + " Seven Day Change: " + coin7day
                 ),
-                thumb_url="https://i.imgur.com/ZbPOM53.png",
+                thumbnail_url="https://i.imgur.com/ZbPOM53.png",
             ),
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -437,7 +449,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                     + "\n7 day percent change: "
                     + coin7day
                 ),
-                thumb_url="https://i.imgur.com/t6BPcMR.png",
+                thumbnail_url="https://i.imgur.com/t6BPcMR.png",
             ),
         ]
         await update.inline_query.answer(results, cache_time=300)
@@ -448,7 +460,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     logger.error("Exception while handling an update:", exc_info=context.error)
 
 
-async def setup(webhook_url=None):
+def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
     # Create application
     application = Application.builder().token(TOKEN).build()
@@ -463,24 +475,22 @@ async def setup(webhook_url=None):
 
     # Set up webhook or polling
     if webhook_url:
-        await application.bot.set_webhook(url=webhook_url)
-        # For webhook mode, you'd typically use a web framework like FastAPI
-        # This is a simplified version - you may need to adjust based on your deployment
+        # For webhook mode, return the application to be used with a web framework
         return application
     else:
-        # Delete webhook if it exists
-        await application.bot.delete_webhook()
-        # Start polling
-        await application.run_polling(allowed_updates=Update.ALL_TYPES)
+        # run_polling() manages its own event loop, so we don't need asyncio.run()
+        # It's a blocking call that will run until stopped
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
-    import asyncio
-
     webhook_url = os.getenv("WEBHOOK_URL", None)
     if webhook_url:
         # For webhook mode, you'd typically run this in a web server context
         # This is a placeholder - adjust based on your deployment needs
-        asyncio.run(setup(webhook_url=webhook_url))
+        app = setup(webhook_url=webhook_url)
+        # In webhook mode, you'd typically set up a web server here
+        # For now, this just returns the application
     else:
-        asyncio.run(setup())
+        # run_polling() handles the event loop internally
+        setup()
