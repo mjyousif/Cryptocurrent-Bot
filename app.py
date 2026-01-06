@@ -14,22 +14,27 @@ from telegram import (
     InlineKeyboardMarkup,
 )
 
+from api import _build_multi_coin_results, _build_single_coin_results
+
 import logging
 
 from uuid import uuid4
 import os
 from dotenv import load_dotenv
-from json_api import *
+from services.crypto_service import get_crypto_list, get_coin_ratio
 from feedReader import *
 from sorter import *
 
 # Load environment variables from .env file
 load_dotenv()
 
+# Configure logging level from environment (default INFO)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=LOG_LEVEL
 )
 logger = logging.getLogger(__name__)
+logger.debug("Logger configured with level %s", LOG_LEVEL)
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
@@ -92,6 +97,98 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.callback_query.edit_message_text(text="Selected option")
 
 
+def _build_single_coin_results(coin):
+    coinID = coin.id
+    coinName = coin.name
+    coinSymbol = coin.symbol
+    coinPrice = coin.price + (" " + coin.currency if coin.price != "N/A" else "")
+    coinCap = coin.market_cap + (
+        " " + coin.currency if coin.market_cap != "N/A" else ""
+    )
+    coin1hr = coin.percent_change_1h + ("%" if coin.percent_change_1h != "N/A" else "")
+    coin1day = coin.percent_change_24h + (
+        "%" if coin.percent_change_24h != "N/A" else ""
+    )
+    coin7day = coin.percent_change_7d + ("%" if coin.percent_change_7d != "N/A" else "")
+
+    imageURL = (
+        "https://s2.coinmarketcap.com/static/img/coins/200x200/" + str(coinID) + ".png"
+    )
+
+    results = [
+        InlineQueryResultPhoto(
+            id=uuid4(),
+            photo_url=(imageURL),
+            thumbnail_url=(imageURL),
+            title=coinName + "(" + coinSymbol + ")",
+            caption=coinName + " (" + coinSymbol + ")",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Value: " + coinPrice,
+            input_message_content=InputTextMessageContent(coinName + ": " + coinPrice),
+            thumbnail_url="https://i.imgur.com/My7IG7r.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Market Capitalization: " + coinCap,
+            input_message_content=InputTextMessageContent(
+                coinName + " Market Capitalization: " + coinCap
+            ),
+            thumbnail_url="https://i.imgur.com/egncB1b.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="One Hour Change: " + coin1hr,
+            input_message_content=InputTextMessageContent(
+                coinName + " One Hour Change: " + coin1hr
+            ),
+            thumbnail_url="https://i.imgur.com/pza5Xjb.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="One Day Change: " + coin1day,
+            input_message_content=InputTextMessageContent(
+                coinName + " One Day Change: " + coin1day
+            ),
+            thumbnail_url="https://i.imgur.com/98YM0PA.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Seven Day Change: " + coin7day,
+            input_message_content=InputTextMessageContent(
+                coinName + " Seven Day Change: " + coin7day
+            ),
+            thumbnail_url="https://i.imgur.com/ZbPOM53.png",
+        ),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Summary of " + coinName + "(" + coinSymbol + ")",
+            input_message_content=InputTextMessageContent(
+                "---"
+                + coinName
+                + " Summary"
+                + "("
+                + coinSymbol
+                + ")"
+                + "---"
+                + "\nPrice: "
+                + coinPrice
+                + "\nMarket Capitalization: "
+                + coinCap
+                + "\n1 hour percent change: "
+                + coin1hr
+                + "\n24 hour percent change: "
+                + coin1day
+                + "\n7 day percent change: "
+                + coin7day
+            ),
+            thumbnail_url="https://i.imgur.com/t6BPcMR.png",
+        ),
+    ]
+    return results
+
+
 async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.inline_query:
         return
@@ -122,221 +219,65 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.inline_query.answer(results)
         return
     elif "," in query:
-        cryptoList = classifyQuery(query)
+        try:
+            cryptoList = get_crypto_list(query)
+        except ValueError as e:
+            logger.error("Error fetching crypto list: %s", e)
+            await update.inline_query.answer(
+                [
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title="Configuration error",
+                        input_message_content=InputTextMessageContent(str(e)),
+                        description="Please set COINMARKETCAP_API_KEY in your .env or environment",
+                    )
+                ]
+            )
+            return
         # If no coins were found, return empty results
         if not cryptoList:
             await update.inline_query.answer([])
             return
-        # stuff that will go in the results, prepared up here because I can't do it in their respective results
-        # Ternarys to remove things that wouldn't make sense in certain conditions. Like if the data is 'N/A', I don't want the currency to show
-        # The big loop gets the data in a list which is joined however it needs to be in the results
-        nameList = []
-        symbolList = []
-        valueList = ["Values:"]
-        symbolValueList = []
-        capList = ["Market Caps:"]
-        symbolCapList = []
-        hourList = ["1 Hour Changes:"]
-        symbolHourList = []
-        dayList = ["1 Day Changes:"]
-        symbolDayList = []
-        weekList = ["7 Day Changes:"]
-        symbolWeekList = []
 
-        k = 0
-        for k in range(len(cryptoList)):
-            nameList.append(cryptoList[k].name + " (" + cryptoList[k].symbol + ")")
-            symbolList.append(cryptoList[k].symbol)
-
-            valueList.append(
-                cryptoList[k].name
-                + " ("
-                + cryptoList[k].symbol
-                + "): "
-                + cryptoList[k].price
-                + " "
-                + (cryptoList[k].currency if cryptoList[k].price != "N/A" else "")
-            )
-            symbolValueList.append(
-                cryptoList[k].symbol
-                + ": "
-                + cryptoList[k].price
-                + " "
-                + (cryptoList[k].currency if cryptoList[k].price != "N/A" else "")
-            )
-
-            capList.append(
-                cryptoList[k].name
-                + " ("
-                + cryptoList[k].symbol
-                + "): "
-                + cryptoList[k].market_cap
-                + " "
-                + (cryptoList[k].currency if cryptoList[k].market_cap != "N/A" else "")
-            )
-            symbolCapList.append(
-                cryptoList[k].symbol
-                + ": "
-                + cryptoList[k].market_cap
-                + " "
-                + (cryptoList[k].currency if cryptoList[k].market_cap != "N/A" else "")
-            )
-
-            hourList.append(
-                cryptoList[k].name
-                + " ("
-                + cryptoList[k].symbol
-                + "): "
-                + cryptoList[k].percent_change_1h
-                + "%"
-            )
-            symbolHourList.append(
-                cryptoList[k].symbol + ": " + cryptoList[k].percent_change_1h + "%"
-            )
-
-            dayList.append(
-                cryptoList[k].name
-                + " ("
-                + cryptoList[k].symbol
-                + "): "
-                + cryptoList[k].percent_change_24h
-                + "%"
-            )
-            symbolDayList.append(
-                cryptoList[k].symbol + ": " + cryptoList[k].percent_change_24h + "%"
-            )
-
-            weekList.append(
-                cryptoList[k].name
-                + " ("
-                + cryptoList[k].symbol
-                + "): "
-                + cryptoList[k].percent_change_7d
-                + "%"
-            )
-            symbolWeekList.append(
-                cryptoList[k].symbol + ": " + cryptoList[k].percent_change_7d + "%"
-            )
-
-        # cleanQuery="_".join(symbolList)+"_"+classifiedQuery.currency
-        results = [
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title=", ".join(nameList),
-                input_message_content=InputTextMessageContent("\n".join(nameList)),
-                thumbnail_url="https://i.imgur.com/R4ybbnJ.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title=cryptoList[0].currency + " Values",
-                description="|".join(symbolValueList),
-                input_message_content=InputTextMessageContent("\n".join(valueList)),
-                thumbnail_url="https://i.imgur.com/My7IG7r.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title=cryptoList[0].currency + " Market Capitalizations",
-                description="|".join(symbolCapList),
-                input_message_content=InputTextMessageContent("\n".join(capList)),
-                thumbnail_url="https://i.imgur.com/egncB1b.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="One Hour Changes",
-                description="|".join(symbolHourList),
-                input_message_content=InputTextMessageContent("\n".join(hourList)),
-                thumbnail_url="https://i.imgur.com/pza5Xjb.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="One Day Changes",
-                description="|".join(symbolDayList),
-                input_message_content=InputTextMessageContent("\n".join(dayList)),
-                thumbnail_url="https://i.imgur.com/98YM0PA.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Seven Day Changes",
-                description="|".join(symbolWeekList),
-                input_message_content=InputTextMessageContent("\n".join(weekList)),
-                thumbnail_url="https://i.imgur.com/ZbPOM53.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Summary of " + ", ".join(nameList),
-                input_message_content=InputTextMessageContent(
-                    "\n".join(valueList)
-                    + "\n\n"
-                    + "\n".join(capList)
-                    + "\n\n"
-                    + "\n".join(hourList)
-                    + "\n\n"
-                    + "\n".join(dayList)
-                    + "\n\n"
-                    + "\n".join(weekList)
-                    + "\n\n"
-                ),
-                thumbnail_url="https://i.imgur.com/t6BPcMR.png",
-            ),
-        ]
+        # Build and send results for multi-coin query
+        results = _build_multi_coin_results(cryptoList)
+        logger.debug("Answering inline with %d multi-coin results", len(results))
         await update.inline_query.answer(results)
+        return
     elif "/" in query:
-        # Format the query to remove spaces that would mess up format
-        query = query.replace("/", ",")
-        cryptoList = classifyQuery(query)
-        # Need at least 2 coins for division
-        if len(cryptoList) < 2:
+        # Format the query to coin1/coin2 and use service helper to compute ratio
+        parts = [p.strip() for p in query.split("/") if p.strip()]
+        if len(parts) != 2:
             await update.inline_query.answer([])
             return
-        coin1Data = cryptoList[0]
-        coin2Data = cryptoList[1]
-        coin1Name = cryptoList[0].name
-        coin1Symbol = cryptoList[0].symbol
-        coin1Value = cryptoList[0].price
-        coin2Name = cryptoList[1].name
-        coin2Symbol = cryptoList[1].symbol
-        coin2Value = cryptoList[1].price
-        # If the value for the coin is not available, return none so that nothing is returned to the user.
-        if coin1Value == "N/A" or coin2Value == "N/A":
-            coin1InCoin2 = None
-        # Do some manipulation. Turn the string from the data into float to do the math to get the value and return to string. Limit the value to 8 places past the decimal. Comma separate the left side of the number.
-        else:
-            coin1InCoin2 = str(
-                float(coin1Value.replace(",", "")) / float(coin2Value.replace(",", ""))
+        try:
+            ratio = get_coin_ratio(parts[0], parts[1])
+        except ValueError as e:
+            logger.error("Error computing ratio: %s", e)
+            await update.inline_query.answer(
+                [
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title="Configuration error",
+                        input_message_content=InputTextMessageContent(str(e)),
+                        description="Please set COINMARKETCAP_API_KEY in your .env or environment",
+                    )
+                ]
             )
-            coin1InCoin2 = coin1InCoin2[: coin1InCoin2.find(".") + 9]
-            coin1InCoin2 = "{:,}".format(
-                float(
-                    coin1InCoin2[: coin1InCoin2.find(".")]
-                    + "."
-                    + coin1InCoin2[coin1InCoin2.find(".") + 1 :]
-                )
-            )
+            return
+        if not ratio:
+            await update.inline_query.answer([])
+            return
 
+        # Build result from ratio
+        title = f"{parts[0]} / {parts[1]}"
+        description = f"{ratio} {parts[0].upper()}/{parts[1].upper()}"
         results = [
             InlineQueryResultArticle(
                 id=uuid4(),
-                title=coin1Name
-                + " ("
-                + coin1Symbol
-                + ") / "
-                + coin2Name
-                + " ("
-                + coin2Symbol
-                + ")",
-                description=coin1InCoin2 + " " + coin1Symbol + "/" + coin2Symbol,
-                input_message_content=InputTextMessageContent(
-                    coin1InCoin2
-                    + " "
-                    + coin1Name
-                    + " ("
-                    + coin1Symbol
-                    + ") / "
-                    + coin2Name
-                    + " ("
-                    + coin2Symbol
-                    + ")"
-                ),
+                title=title,
+                description=description,
+                input_message_content=InputTextMessageContent(f"{description}"),
                 thumbnail_url="https://i.imgur.com/My7IG7r.png",
             ),
         ]
@@ -345,113 +286,29 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     else:
 
-        # puts the query into a class that stores the coin and the currency
-        coinList = classifyQuery(query)
+        # Single coin query: use service to get a formatted crypto object
+        try:
+            cryptoList = get_crypto_list(query)
+        except ValueError as e:
+            logger.error("Error fetching crypto list: %s", e)
+            await update.inline_query.answer(
+                [
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title="Configuration error",
+                        input_message_content=InputTextMessageContent(str(e)),
+                        description="Please set COINMARKETCAP_API_KEY in your .env or environment",
+                    )
+                ]
+            )
+            return
         # If no coins were found, return empty results
-        if not coinList:
+        if not cryptoList:
             await update.inline_query.answer([])
             return
-        # getCoinData(classifiedQuery.coinQuery[0],classifiedQuery.currency)
-        coinID = coinList[0].id
-        coinName = coinList[0].name
-        coinSymbol = coinList[0].symbol
-        coinPrice = (
-            coinList[0].price
-            + " "
-            + (coinList[0].currency if coinList[0].price != "N/A" else "")
-        )
-        coinCap = (
-            coinList[0].market_cap
-            + " "
-            + (coinList[0].currency if coinList[0].market_cap != "N/A" else "")
-        )
-        coin1hr = coinList[0].percent_change_1h + (
-            "%" if coinList[0].percent_change_1h != "N/A" else ""
-        )
-        coin1day = coinList[0].percent_change_24h + (
-            "%" if coinList[0].percent_change_24h != "N/A" else ""
-        )
-        coin7day = coinList[0].percent_change_7d + (
-            "%" if coinList[0].percent_change_7d != "N/A" else ""
-        )
-        imageURL = (
-            "https://s2.coinmarketcap.com/static/img/coins/200x200/"
-            + str(coinID)
-            + ".png"
-        )
-        results = [
-            InlineQueryResultPhoto(
-                id=uuid4(),
-                photo_url=(imageURL),
-                thumbnail_url=(imageURL),
-                title=coinName + "(" + coinSymbol + ")",
-                caption=coinName + " (" + coinSymbol + ")",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Value: " + coinPrice,
-                input_message_content=InputTextMessageContent(
-                    coinName + ": " + coinPrice
-                ),
-                thumbnail_url="https://i.imgur.com/My7IG7r.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Market Capitalization: " + coinCap,
-                input_message_content=InputTextMessageContent(
-                    coinName + " Market Capitalization: " + coinCap
-                ),
-                thumbnail_url="https://i.imgur.com/egncB1b.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="One Hour Change: " + coin1hr,
-                input_message_content=InputTextMessageContent(
-                    coinName + " One Hour Change: " + coin1hr
-                ),
-                thumbnail_url="https://i.imgur.com/pza5Xjb.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="One Day Change: " + coin1day,
-                input_message_content=InputTextMessageContent(
-                    coinName + " One Day Change: " + coin1day
-                ),
-                thumbnail_url="https://i.imgur.com/98YM0PA.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Seven Day Change: " + coin7day,
-                input_message_content=InputTextMessageContent(
-                    coinName + " Seven Day Change: " + coin7day
-                ),
-                thumbnail_url="https://i.imgur.com/ZbPOM53.png",
-            ),
-            InlineQueryResultArticle(
-                id=uuid4(),
-                title="Summary of " + coinName + "(" + coinSymbol + ")",
-                input_message_content=InputTextMessageContent(
-                    "---"
-                    + coinName
-                    + " Summary"
-                    + "("
-                    + coinSymbol
-                    + ")"
-                    + "---"
-                    + "\nPrice: "
-                    + coinPrice
-                    + "\nMarket Capitalization: "
-                    + coinCap
-                    + "\n1 hour percent change: "
-                    + coin1hr
-                    + "\n24 hour percent change: "
-                    + coin1day
-                    + "\n7 day percent change: "
-                    + coin7day
-                ),
-                thumbnail_url="https://i.imgur.com/t6BPcMR.png",
-            ),
-        ]
+
+        coin = cryptoList[0]
+        results = _build_single_coin_results(coin)
         await update.inline_query.answer(results, cache_time=300)
 
 
@@ -464,6 +321,7 @@ def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
     # Create application
     application = Application.builder().token(TOKEN).build()
+    logger.info("Application created; registering handlers")
 
     # Register handlers
     application.add_handler(CommandHandler("start", start))
@@ -472,6 +330,7 @@ def setup(webhook_url=None):
 
     # Register error handler
     application.add_error_handler(error_handler)
+    logger.debug("Handlers registered")
 
     # Set up webhook or polling
     if webhook_url:
@@ -480,6 +339,7 @@ def setup(webhook_url=None):
     else:
         # run_polling() manages its own event loop, so we don't need asyncio.run()
         # It's a blocking call that will run until stopped
+        logger.info("Starting polling")
         application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

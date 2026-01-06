@@ -1,6 +1,6 @@
 import requests
 import os
-from json_api import *
+from services.crypto_service import get_crypto_list
 
 # sandbox-api.coinmarketcap.com
 
@@ -25,8 +25,11 @@ def main():
 
     # sortTypeDict={"name":"name","price":"price","mktcap":"market_cap","1h":"percent_change_1h","1d":"percent_change_24h","7d":"percent_change_7d"}
     # print(sortTypeDict["name"])
-    delta = classifyQuery("top")
-    print(delta[0].id)
+    delta = get_crypto_list("top")
+    if delta:
+        print(delta[0].id)
+    else:
+        print("no results")
 
 
 if __name__ == "__main__":
