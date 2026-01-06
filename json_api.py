@@ -153,7 +153,12 @@ def classifyQuery(query):
 
     # Find the ID
     idList = []
-    api_key = os.getenv("COINMARKETCAP_API_KEY", "[CENSORED]")
+    api_key = os.getenv("COINMARKETCAP_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "COINMARKETCAP_API_KEY environment variable is not set. "
+            "Please set it in your .env file or as an environment variable."
+        )
     listings = requests.get(
         "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map",
         headers={"X-CMC_PRO_API_KEY": api_key},

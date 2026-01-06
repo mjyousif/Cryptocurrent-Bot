@@ -1,4 +1,5 @@
 import requests
+import os
 from json_api import *
 
 # sandbox-api.coinmarketcap.com
@@ -16,9 +17,9 @@ from json_api import *
 
 def main():
 
-    # alpha=requests.get('https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/map', headers={'X-CMC_PRO_API_KEY':'[CENSORED]'})
+    # alpha=requests.get('https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/map', headers={'X-CMC_PRO_API_KEY':os.getenv('COINMARKETCAP_API_KEY')})
     # print (alpha.json()['data'][0])
-    # coinInfo=requests.get('https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest', params={'id':str(1),'convert':'GBP'},headers={'X-CMC_PRO_API_KEY':'[CENSORED]'})
+    # coinInfo=requests.get('https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest', params={'id':str(1),'convert':'GBP'},headers={'X-CMC_PRO_API_KEY':os.getenv('COINMARKETCAP_API_KEY')})
     # coinInfo=coinInfo.json()['data']['1']
     # print (coinInfo)
 

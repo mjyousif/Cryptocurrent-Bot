@@ -60,7 +60,13 @@ def error(bot, update, error):
 
 def main():
     # Create the Updater and pass it your bot's token.
-    updater = Updater("491978101:AAEJLq5HTtDH-9l4PCPj9Fu2O9FRapGhWV8")
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        raise ValueError("TELEGRAM_BOT_TOKEN environment variable is not set")
+    updater = Updater(token)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
