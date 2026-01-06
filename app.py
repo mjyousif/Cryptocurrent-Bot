@@ -1,29 +1,30 @@
+from telegram import Update
 from telegram.ext import (
-    Updater,
+    Application,
     CommandHandler,
     InlineQueryHandler,
     CallbackQueryHandler,
+    ContextTypes,
 )
 from telegram import (
     InlineQueryResultArticle,
     InlineQueryResultPhoto,
     InputTextMessageContent,
-    Message,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
 )
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-# this stuff is for the webhook
 import logging
-from queue import Queue
-from threading import Thread
-from telegram import Bot
-from telegram.ext import Dispatcher, MessageHandler, Filters
 
 from uuid import uuid4
 import os
+from dotenv import load_dotenv
 from json_api import *
 from feedReader import *
 from sorter import *
+
+# Load environment variables from .env file
+load_dotenv()
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -38,9 +39,9 @@ if not TOKEN:
     )
 
 
-def start(bot, update):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:  # this is what happens when user clicks the "sort button" in chat... at least what they should see
-        if "_" in (update.message.text.split(" ")[1]):
+        if update.message and "_" in (update.message.text.split(" ")[1]):
             # split and fix the query that was passed to be usable
             querySplit = update.message.text.split(" ")[1].split("_")
             query = ",".join(querySplit[:-1]) + " " + querySplit[-1]
@@ -72,30 +73,28 @@ def start(bot, update):
                 ],
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            # update.message.reply_text('Please choose a sorting preference:',reply_markup=reply_markup)
-            bot.send_message(
-                chat_id=update.message.chat_id,
-                text="Please choose a sorting preference:",
+            await update.message.reply_text(
+                "Please choose a sorting preference:",
                 reply_markup=reply_markup,
             )
-    except:
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text=("Use me inline by tagging me and typing a crypto currency!"),
-            # text=update.message.text
-        )
+    except Exception:
+        if update.message:
+            await update.message.reply_text(
+                "Use me inline by tagging me and typing a crypto currency!"
+            )
 
 
-def button(bot, update):
-    query = update.inline_query
-    bot.edit_message_text(
-        text="Selected option",
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id,
-    )
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # This handler seems unused/incomplete - keeping for compatibility
+    if update.callback_query:
+        await update.callback_query.answer()
+        if update.callback_query.message:
+            await update.callback_query.edit_message_text(text="Selected option")
 
 
-def inline_crypto(bot, update):
+async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.inline_query:
+        return
     query = update.inline_query.query
     if not query:
         return
@@ -120,6 +119,8 @@ def inline_crypto(bot, update):
                     description=newsArticles[i].description,
                 )
             )
+        await update.inline_query.answer(results)
+        return
     elif "," in query:
         cryptoList = classifyQuery(query)
         # stuff that will go in the results, prepared up here because I can't do it in their respective results
@@ -274,9 +275,7 @@ def inline_crypto(bot, update):
                 thumb_url="https://i.imgur.com/t6BPcMR.png",
             ),
         ]
-        bot.answer_inline_query(
-            update.inline_query.id, results
-        )  # , switch_pm_text='Click for sorted results',switch_pm_parameter=cleanQuery)
+        await update.inline_query.answer(results)
     elif "/" in query:
         # Format the query to remove spaces that would mess up format
         query = query.replace("/", ",")
@@ -333,6 +332,8 @@ def inline_crypto(bot, update):
                 thumb_url="https://i.imgur.com/My7IG7r.png",
             ),
         ]
+        await update.inline_query.answer(results)
+        return
 
     else:
 
@@ -439,43 +440,47 @@ def inline_crypto(bot, update):
                 thumb_url="https://i.imgur.com/t6BPcMR.png",
             ),
         ]
-    bot.answer_inline_query(update.inline_query.id, results, cache_time=300)
+        await update.inline_query.answer(results, cache_time=300)
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"' % (update, error))
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Log the error and send a telegram message to notify the developer."""
+    logger.error("Exception while handling an update:", exc_info=context.error)
 
 
-def setup(webhook_url=None):
+async def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
-    logging.basicConfig(level=logging.WARNING)
-    if webhook_url:
-        bot = Bot(TOKEN)
-        update_queue = Queue()
-        dp = Dispatcher(bot, update_queue)
-    else:
-        updater = Updater(TOKEN)
-        bot = updater.bot
-        dp = updater.dispatcher
-        dp.add_handler(CommandHandler("start", start))
+    # Create application
+    application = Application.builder().token(TOKEN).build()
 
-        # on noncommand i.e message - echo the message on Telegram
-        dp.add_handler(InlineQueryHandler(inline_crypto))
-        dp.add_handler(InlineQueryHandler(button))
-        # log all errors
-        dp.add_error_handler(error)
-    # Add your handlers here
+    # Register handlers
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(InlineQueryHandler(inline_crypto))
+    application.add_handler(CallbackQueryHandler(button))
+
+    # Register error handler
+    application.add_error_handler(error_handler)
+
+    # Set up webhook or polling
     if webhook_url:
-        bot.set_webhook(webhook_url=webhook_url)
-        thread = Thread(target=dp.start, name="dispatcher")
-        thread.start()
-        return update_queue, bot
+        await application.bot.set_webhook(url=webhook_url)
+        # For webhook mode, you'd typically use a web framework like FastAPI
+        # This is a simplified version - you may need to adjust based on your deployment
+        return application
     else:
-        bot.set_webhook()  # Delete webhook
-        updater.start_polling()
-        updater.idle()
+        # Delete webhook if it exists
+        await application.bot.delete_webhook()
+        # Start polling
+        await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
+    import asyncio
+
     webhook_url = os.getenv("WEBHOOK_URL", None)
-    setup(webhook_url=webhook_url if webhook_url else None)
+    if webhook_url:
+        # For webhook mode, you'd typically run this in a web server context
+        # This is a placeholder - adjust based on your deployment needs
+        asyncio.run(setup(webhook_url=webhook_url))
+    else:
+        asyncio.run(setup())

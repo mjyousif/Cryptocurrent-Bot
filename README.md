@@ -1,11 +1,36 @@
 # CryptoCurrent
-This is a telegram bot that gets information about cryptocurrencies and provides it inline to the user. 
+
+This is a telegram bot that gets information about cryptocurrencies and provides it inline to the user.
+
+## Setup
+
+1. **Install dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Configure environment variables:**
+
+   - Copy `env.example` to `.env`
+   - Fill in your API keys:
+     - `TELEGRAM_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather) on Telegram
+     - `COINMARKETCAP_API_KEY`: Get from [CoinMarketCap API](https://coinmarketcap.com/api/)
+     - `WEBHOOK_URL`: (Optional) Only needed for webhook deployment
+
+3. **Run the bot:**
+   ```bash
+   python app.py
+   ```
+
+## Usage
 
 In order to use this bot, open Telegram and type @CryptoCurrent_bot, you will then have a few options.
 
 ### Crypto Currency Information
 
 ##### Single Coin
+
 In order to get current information about a coin, enter the following
 
 `<@CryptoCurrent_bot <crypto currency name or symbol> [currency symbol]>`
@@ -14,7 +39,8 @@ For the crypto currency name or symbol, you could enter something like "Bitcoin"
 
 For the currency symbol, you could enter a desired output currency. If the currency is one of the accepted currencies, it will provide the information in that currency.
 The following are acceptted currencies:
->["AUD", "BRL", "CAD", "CHF", "CLP", "CNY", "CZK", "DKK", "EUR", "GBP", "HKD", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR", "NOK", "NZD", "PHP", "PKR", "PLN", "RUB", "SEK", "SGD", "THB", "TRY", "TWD", "ZAR", "USD"]
+
+> ["AUD", "BRL", "CAD", "CHF", "CLP", "CNY", "CZK", "DKK", "EUR", "GBP", "HKD", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR", "NOK", "NZD", "PHP", "PKR", "PLN", "RUB", "SEK", "SGD", "THB", "TRY", "TWD", "ZAR", "USD"]
 
 ##### Multi Coin
 
@@ -25,7 +51,6 @@ This functionality allows the user to get information about several coins in one
 If the user so desires, they can enter a currency code from the above list of accepted currencies and get the information in that currency.
 
 All information for this functionality is retrieved from the CoinMarketCap Pro API.
-
 
 ## Credits
 

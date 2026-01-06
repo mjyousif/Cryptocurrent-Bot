@@ -1,6 +1,10 @@
 import requests
 import os
+from dotenv import load_dotenv
 from sorter import *
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Stuff to deal with multiple coins
