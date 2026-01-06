@@ -12,4 +12,4 @@ services:
     volumes:
       - ./coinmarketcap_cache.sqlite:/app/coinmarketcap_cache.sqlite
     env_file:
-      - .env
+      - stack.env
