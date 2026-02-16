@@ -67,7 +67,20 @@ class CoinMarketCapClient:
         logger.info("Fetching listings from CoinMarketCap: %s", url)
         try:
             r = self._sess.get(url)
+            if r.status_code != 200:
+                logger.error(
+                    "CoinMarketCap listings request failed: status=%s body=%s",
+                    r.status_code,
+                    r.text,
+                )
             r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            logger.exception(
+                "Failed to fetch listings (HTTPError): %s response=%s",
+                e,
+                getattr(e.response, "text", None),
+            )
+            raise
         except Exception as e:
             logger.exception("Failed to fetch listings: %s", e)
             raise
@@ -89,7 +102,21 @@ class CoinMarketCapClient:
         logger.info("Fetching quotes for ids=%s convert=%s", ids, convert)
         try:
             r = self._sess.get(url, params=params)
+            if r.status_code != 200:
+                logger.error(
+                    "CoinMarketCap quotes request failed: status=%s body=%s",
+                    r.status_code,
+                    r.text,
+                )
             r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            logger.exception(
+                "Failed to fetch quotes for ids=%s (HTTPError): %s response=%s",
+                ids,
+                e,
+                getattr(e.response, "text", None),
+            )
+            raise
         except Exception as e:
             logger.exception("Failed to fetch quotes for ids=%s: %s", ids, e)
             raise
