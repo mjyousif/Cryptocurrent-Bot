@@ -1,63 +1,89 @@
-# CryptoCurrent
+# CryptoCurrent Bot 📈
 
-This is a telegram bot that gets information about cryptocurrencies and provides it inline to the user.
+A Telegram inline bot that provides real-time cryptocurrency information right in your chat.
 
-## Setup
+## Features
 
-1. **Install dependencies:**
+* **Single Coin Lookup**: Get current information about any cryptocurrency by its name or symbol.
+* **Multi-Coin Comparison**: Fetch data for several coins in a single message for quick comparison.
+* **Currency Conversion**: Request crypto prices in over 30 different fiat currencies (USD, EUR, GBP, JPY, etc.).
+* **News Feed**: Get the latest cryptocurrency news articles inline.
+* **Smart Caching**: Efficiently caches CoinMarketCap data using SQLite to minimize API requests and improve response times.
 
+## Prerequisites
+
+* Python 3.10+ or Docker
+* A Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
+* A CoinMarketCap API Key (from [CoinMarketCap API](https://coinmarketcap.com/api/))
+
+## Setup & Installation
+
+You can run the bot natively using Python or via Docker.
+
+### Option 1: Native Python
+
+1. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Configure environment variables:**
+2. **Configure environment variables**:
+   Copy the example environment file and fill in your keys:
+   ```bash
+   cp env.example .env
+   ```
+   Add your `TELEGRAM_BOT_TOKEN` and `COINMARKETCAP_API_KEY`.
 
-   - Copy `env.example` to `.env`
-   - Fill in your API keys:
-     - `TELEGRAM_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather) on Telegram
-     - `COINMARKETCAP_API_KEY`: Get from [CoinMarketCap API](https://coinmarketcap.com/api/)
-     - `WEBHOOK_URL`: (Optional) Only needed for webhook deployment
-
-3. **Run the bot:**
+3. **Run the bot**:
    ```bash
    python app.py
    ```
 
+### Option 2: Docker (Recommended)
+
+1. **Configure environment variables**:
+   Create a `.env` file in the project root with your credentials:
+   ```env
+   TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+   COINMARKETCAP_API_KEY=your_coinmarketcap_api_key_here
+   ```
+
+2. **Build and run the container**:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs or stop the container**:
+   ```bash
+   docker-compose logs -f
+   docker-compose down
+   ```
+
 ## Usage
 
-In order to use this bot, open Telegram and type @CryptoCurrent_bot, you will then have a few options.
+To use the bot, simply type `@CryptoCurrent_bot` (or your own bot's username) in any Telegram chat, followed by your query.
 
-### Crypto Currency Information
+### Single Coin Information
+```text
+@CryptoCurrent_bot <crypto_name_or_symbol> [fiat_currency]
+```
+* **Example**: `@CryptoCurrent_bot bitcoin` or `@CryptoCurrent_bot btc eur`
+* *Note: Case does not matter. Names with spaces like "Bitcoin Cash" are supported.*
 
-##### Single Coin
+### Multi-Coin Comparison
+```text
+@CryptoCurrent_bot <coin1>,<coin2>,<coin3> [fiat_currency]
+```
+* **Example**: `@CryptoCurrent_bot btc,eth,ltc gbp`
+* *Note: Separate coins with a comma. You can enter as many as you want.*
 
-In order to get current information about a coin, enter the following
-
-`<@CryptoCurrent_bot <crypto currency name or symbol> [currency symbol]>`
-
-For the crypto currency name or symbol, you could enter something like "Bitcoin" or "btc". Case does not matter. It should also accept spaces, so a currency such as "Bitcoin Cash" or "bch" will work the same.
-
-For the currency symbol, you could enter a desired output currency. If the currency is one of the accepted currencies, it will provide the information in that currency.
-The following are acceptted currencies:
-
-> ["AUD", "BRL", "CAD", "CHF", "CLP", "CNY", "CZK", "DKK", "EUR", "GBP", "HKD", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR", "NOK", "NZD", "PHP", "PKR", "PLN", "RUB", "SEK", "SGD", "THB", "TRY", "TWD", "ZAR", "USD"]
-
-##### Multi Coin
-
-`<@CryptoCurrent_bot <coin-1>,<coin-2>,...<coin-n> [currency symbol]>`
-
-This functionality allows the user to get information about several coins in one messages, allowing quick comparison of any of the available informations in a single message. Any of the tokens can be the name or symbol of the coin. Theoretically, the user can enter as many coins as desired, perhaps limitted by timeout. The coins must be separated by a comma.
-
-If the user so desires, they can enter a currency code from the above list of accepted currencies and get the information in that currency.
-
-All information for this functionality is retrieved from the CoinMarketCap Pro API.
+### Supported Fiat Currencies
+The bot supports the following fiat output currencies:
+`AUD`, `BRL`, `CAD`, `CHF`, `CLP`, `CNY`, `CZK`, `DKK`, `EUR`, `GBP`, `HKD`, `HUF`, `IDR`, `ILS`, `INR`, `JPY`, `KRW`, `MXN`, `MYR`, `NOK`, `NZD`, `PHP`, `PKR`, `PLN`, `RUB`, `SEK`, `SGD`, `THB`, `TRY`, `TWD`, `ZAR`, `USD`
 
 ## Credits
 
-Thanks to Telegram for enabling creators on their platform by having the bot api.
-
-Thanks to the python-telegram-bot team for creating a telegram bot api in python.
-
-Thanks to my TOP COUNSEL Izan Mubarak who accompanied me in the learning process and provided top tier expertise.
-
-Thanks to the RedHat OpenShift program which allows me to host my program online.
+* Thanks to Telegram for their excellent Bot API.
+* Thanks to the [python-telegram-bot](https://python-telegram-bot.org/) team.
+* Thanks to TOP COUNSEL Izan Mubarak for providing top tier expertise.
+* Thanks to the RedHat OpenShift program.
