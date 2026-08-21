@@ -80,10 +80,3 @@ To use the bot, simply type `@CryptoCurrent_bot` (or your own bot's username) in
 ### Supported Fiat Currencies
 The bot supports the following fiat output currencies:
 `AUD`, `BRL`, `CAD`, `CHF`, `CLP`, `CNY`, `CZK`, `DKK`, `EUR`, `GBP`, `HKD`, `HUF`, `IDR`, `ILS`, `INR`, `JPY`, `KRW`, `MXN`, `MYR`, `NOK`, `NZD`, `PHP`, `PKR`, `PLN`, `RUB`, `SEK`, `SGD`, `THB`, `TRY`, `TWD`, `ZAR`, `USD`
-
-## Credits
-
-* Thanks to Telegram for their excellent Bot API.
-* Thanks to the [python-telegram-bot](https://python-telegram-bot.org/) team.
-* Thanks to TOP COUNSEL Izan Mubarak for providing top tier expertise.
-* Thanks to the RedHat OpenShift program.
