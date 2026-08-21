@@ -84,7 +84,7 @@ class InlineQueryProcessor:
                     title=title,
                     description=description,
                     input_message_content=InputTextMessageContent(f"{description}"),
-                    thumbnail_url="https://i.imgur.com/My7IG7r.png",
+                    thumbnail_url="https://i.imgur.com/T5KYrL0.jpg",
                 )
             ]
             return results, None
