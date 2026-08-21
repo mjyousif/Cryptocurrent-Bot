@@ -1,7 +1,0 @@
-requests
-setuptools
-python-telegram-bot>=20.0
-feedparser
-black
-python-dotenv
-google-genai

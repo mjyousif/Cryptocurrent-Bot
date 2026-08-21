@@ -28,7 +28,7 @@ try:
     from google import genai
 except Exception as exc:
     raise ImportError(
-        "google-genai is required for Google AI support. Install with: pip install google-genai"
+        "google-genai is required for Google AI support. Install with: uv add google-genai"
     ) from exc
 
 # Preserve backward compatibility for env var name

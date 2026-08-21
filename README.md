@@ -22,9 +22,10 @@ You can run the bot natively using Python or via Docker.
 
 ### Option 1: Native Python
 
-1. **Install dependencies**:
+1. **Install uv**:
+   Follow the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/) or install via pip:
    ```bash
-   pip install -r requirements.txt
+   pip install uv
    ```
 
 2. **Configure environment variables**:
@@ -36,7 +37,7 @@ You can run the bot natively using Python or via Docker.
 
 3. **Run the bot**:
    ```bash
-   python app.py
+   uv run app.py
    ```
 
 ### Option 2: Docker (Recommended)
