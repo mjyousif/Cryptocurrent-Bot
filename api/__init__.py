@@ -63,42 +63,42 @@ def _build_multi_coin_results(cryptoList):
             id=uuid4(),
             title=", ".join(nameList),
             input_message_content=InputTextMessageContent("\n".join(nameList)),
-            thumbnail_url="https://i.imgur.com/04oIHl8.jpg",
+            thumbnail_url="https://i.imgur.com/04oIHl8.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
             title=f"{cryptoList[0].currency} Values",
             description="|".join(symbolValueList),
             input_message_content=InputTextMessageContent("\n".join(valueList)),
-            thumbnail_url="https://i.imgur.com/T5KYrL0.jpg",
+            thumbnail_url="https://i.imgur.com/T5KYrL0.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
             title=f"{cryptoList[0].currency} Market Capitalizations",
             description="|".join(symbolCapList),
             input_message_content=InputTextMessageContent("\n".join(capList)),
-            thumbnail_url="https://i.imgur.com/hbVXtjF.jpg",
+            thumbnail_url="https://i.imgur.com/hbVXtjF.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
             title="One Hour Changes",
             description="|".join(symbolHourList),
             input_message_content=InputTextMessageContent("\n".join(hourList)),
-            thumbnail_url="https://i.imgur.com/4m13WKZ.jpg",
+            thumbnail_url="https://i.imgur.com/4m13WKZ.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
             title="One Day Changes",
             description="|".join(symbolDayList),
             input_message_content=InputTextMessageContent("\n".join(dayList)),
-            thumbnail_url="https://i.imgur.com/lAX9M9b.jpg",
+            thumbnail_url="https://i.imgur.com/lAX9M9b.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
             title="Seven Day Changes",
             description="|".join(symbolWeekList),
             input_message_content=InputTextMessageContent("\n".join(weekList)),
-            thumbnail_url="https://i.imgur.com/AOfWawJ.jpg",
+            thumbnail_url="https://i.imgur.com/AOfWawJ.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -115,7 +115,7 @@ def _build_multi_coin_results(cryptoList):
                 + "\n".join(weekList)
                 + "\n\n"
             ),
-            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg",
+            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg?v=1",
         ),
     ]
     logger.debug("Built %d inline results for multi-coin query", len(results))
@@ -157,7 +157,7 @@ def _build_single_coin_results(coin):
             id=uuid4(),
             title="Value: " + coinPrice,
             input_message_content=InputTextMessageContent(coinName + ": " + coinPrice),
-            thumbnail_url="https://i.imgur.com/T5KYrL0.jpg",
+            thumbnail_url="https://i.imgur.com/T5KYrL0.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -165,7 +165,7 @@ def _build_single_coin_results(coin):
             input_message_content=InputTextMessageContent(
                 coinName + " Market Capitalization: " + coinCap
             ),
-            thumbnail_url="https://i.imgur.com/hbVXtjF.jpg",
+            thumbnail_url="https://i.imgur.com/hbVXtjF.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -173,7 +173,7 @@ def _build_single_coin_results(coin):
             input_message_content=InputTextMessageContent(
                 coinName + " One Hour Change: " + coin1hr
             ),
-            thumbnail_url="https://i.imgur.com/4m13WKZ.jpg",
+            thumbnail_url="https://i.imgur.com/4m13WKZ.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -181,7 +181,7 @@ def _build_single_coin_results(coin):
             input_message_content=InputTextMessageContent(
                 coinName + " One Day Change: " + coin1day
             ),
-            thumbnail_url="https://i.imgur.com/lAX9M9b.jpg",
+            thumbnail_url="https://i.imgur.com/lAX9M9b.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -189,7 +189,7 @@ def _build_single_coin_results(coin):
             input_message_content=InputTextMessageContent(
                 coinName + " Seven Day Change: " + coin7day
             ),
-            thumbnail_url="https://i.imgur.com/AOfWawJ.jpg",
+            thumbnail_url="https://i.imgur.com/AOfWawJ.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -213,7 +213,7 @@ def _build_single_coin_results(coin):
                 + "\n7 day percent change: "
                 + coin7day
             ),
-            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg",
+            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg?v=1",
         ),
         InlineQueryResultArticle(
             id=uuid4(),
@@ -232,7 +232,7 @@ def _build_single_coin_results(coin):
                     ]
                 ]
             ),
-            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg",
+            thumbnail_url="https://i.imgur.com/ChAGG1c.jpg?v=1",
         ),
     ]
     return results
