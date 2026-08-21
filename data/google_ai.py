@@ -31,9 +31,6 @@ except Exception as exc:
         "google-genai is required for Google AI support. Install with: uv add google-genai"
     ) from exc
 
-# Preserve backward compatibility for env var name
-if not os.environ.get("GEMINI_API_KEY") and os.environ.get("GOOGLE_API_KEY"):
-    os.environ["GEMINI_API_KEY"] = os.environ["GOOGLE_API_KEY"]
 
 logger = logging.getLogger(__name__)
 
