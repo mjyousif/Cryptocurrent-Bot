@@ -27,7 +27,7 @@ except ImportError as exc:
 logger = logging.getLogger(__name__)
 
 # Default model to use (we will prefix with gemini/ for litellm)
-DEFAULT_MODEL = "gemma-3-27b-it"
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
 
 class GoogleAIError(RuntimeError):
