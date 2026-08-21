@@ -14,7 +14,7 @@ from telegram import (
 
 from api import _build_multi_coin_results, _build_single_coin_results
 from services.crypto_service import get_crypto_list, get_coin_ratio
-from feedReader import news
+from services.feedReader import news
 
 logger = logging.getLogger(__name__)
 

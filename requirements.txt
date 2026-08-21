@@ -2,7 +2,6 @@ requests
 setuptools
 python-telegram-bot>=20.0
 feedparser
-sorter
 black
 python-dotenv
 google-genai

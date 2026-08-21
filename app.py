@@ -22,8 +22,8 @@ from uuid import uuid4
 import os
 from dotenv import load_dotenv
 from services.crypto_service import get_crypto_list, get_coin_ratio
-from feedReader import *
-from sorter import *
+from services.feedReader import *
+from services.sorter import *
 
 # Load environment variables from .env file
 load_dotenv()

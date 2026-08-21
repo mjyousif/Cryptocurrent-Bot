@@ -14,7 +14,7 @@ from typing import List, Optional
 import logging
 from data.coinmarketcap import CoinMarketCapClient, parse_coin_info
 from data.models import CryptoQuote
-from sorter import valueSorter
+from services.sorter import valueSorter
 
 logger = logging.getLogger(__name__)
 
