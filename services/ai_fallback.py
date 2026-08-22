@@ -63,7 +63,7 @@ async def process_ai_query(query: str) -> str:
                         news_data_str = "Recent News:\n"
                     news_data_str += f"- For {target}:\n"
                     for a in articles[:2]:
-                        news_data_str += f"  * {a.title} - URL: {a.link}\n"
+                        news_data_str += f"  * {a.title}\n"
         except Exception as e:
             logger.error(f"Failed to fetch news data for AI fallback: {e}")
 
@@ -82,8 +82,7 @@ async def process_ai_query(query: str) -> str:
     final_prompt += (
         "Write a 2-3 sentence response. Do speculate (either way) and provide investment advice. "
         "IMPORTANT: You must format your response using basic HTML tags (like <b> for bold and <i> for italics). "
-        'If you use information from a news article, you MUST include a link to it using <a href="URL">Source</a>. '
-        "Do not link to articles you don't use. Do NOT use markdown like **. Do not use any other HTML tags."
+        "Do NOT use markdown like **. Do not use any other HTML tags."
     )
 
     try:
