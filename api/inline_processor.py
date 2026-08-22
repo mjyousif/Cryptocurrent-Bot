@@ -42,7 +42,7 @@ class InlineQueryProcessor:
                 self._handle_ratio,
             ),
             (
-                re.compile(r"^[a-zA-Z0-9\-\.]+(?:,[a-zA-Z0-9\-\.]+)+$"),
+                re.compile(r"^.*,.*$"),
                 self._handle_multi_coin,
             ),
             (re.compile(r"^(.*)$"), self._handle_single_coin_or_fallback),  # Catch-all

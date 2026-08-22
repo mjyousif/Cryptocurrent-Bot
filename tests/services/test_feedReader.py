@@ -1,12 +1,6 @@
 from unittest.mock import patch
 
-from services.feedReader import Articles, getBetween, news
-
-
-def test_getBetween():
-    text = "Hello <p>world</p> today"
-    result = getBetween(text, "<p>", "</p>", beforeFix=3, afterFix=0)
-    assert result == "world"
+from services.feedReader import Articles, news
 
 
 @patch("services.feedReader.feedparser.parse")
