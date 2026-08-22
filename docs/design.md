@@ -4,7 +4,7 @@
 CryptoCurrent-Bot is a Telegram inline bot. Users type `@CryptoCurrent_bot <query>` in any chat. The bot fetches data via CoinMarketCap, caches it locally using SQLite to avoid rate limits, and returns an interactive inline result panel.
 
 ## AI Fallback
-Natural language queries fall back to a `litellm` powered processing chain that extracts intents, pulls live market data, and synthesizes answers.
+Natural language queries fall back to a `litellm` powered processing chain that uses structured JSON extraction to pull mentioned coins and news keywords, fetches live market data and RSS news, and synthesizes answers.
 
 ## Project Structure
 - `app.py`: Main entry point containing Telegram handlers (e.g., `inline_crypto`, `button`, `handle_chosen_inline_result`).

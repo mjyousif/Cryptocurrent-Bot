@@ -43,6 +43,7 @@ def generate_text(
     top_p: Optional[float] = None,
     safety_settings: Optional[Dict[str, Any]] = None,
     timeout: int = 30,
+    response_format: Optional[Any] = None,
 ) -> str:
     """Generate text using LiteLLM (routing to Gemini by default).
 
@@ -55,6 +56,7 @@ def generate_text(
         top_p: optional nucleus sampling parameter.
         safety_settings: optional dictionary to pass to the API's safety settings.
         timeout: HTTP request timeout in seconds.
+        response_format: optional format specifier (e.g., {"type": "json_object"}).
 
     Returns:
         The generated text (string).
@@ -83,6 +85,7 @@ def generate_text(
             max_tokens=max_output_tokens,
             top_p=top_p,
             timeout=timeout,
+            response_format=response_format,
         )
     except Exception as exc:
         logger.exception("Error when calling litellm")

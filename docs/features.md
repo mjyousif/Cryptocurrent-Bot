@@ -34,9 +34,9 @@ Users can fetch the latest cryptocurrency news articles directly inline. The bot
 ## 4. AI Features
 
 ### Natural Language Fallback
-If the query doesn't match standard commands (like single/multi coins, news, or ratios), it falls back to an AI agent that can understand natural language. It will extract the mentioned coins, look up live market data, and generate a response.
+If the query doesn't match standard commands (like single/multi coins, news, or ratios), it falls back to an AI agent that can understand natural language. It will extract the mentioned coins and any general news keywords (like 'SEC', 'FED'), look up live market data and recent news articles, and generate a context-aware response.
 - **Format:** `@CryptoCurrent_bot <natural language question>`
-- **Example:** `@CryptoCurrent_bot what is the price of bitcoin and ethereum?`
+- **Example:** `@CryptoCurrent_bot what did the SEC say about Ethereum today?`
 
 ### AI Summaries
 For single-coin queries, users can click the inline callback button labeled **`AI summary`** attached to the result. This triggers the AI to provide a fun and truthful 2-3 sentence market summary of the coin based on live data.

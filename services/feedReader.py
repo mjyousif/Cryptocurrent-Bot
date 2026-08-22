@@ -50,13 +50,29 @@ def news(tag=None):
                     )
             else:
                 matchedEntries = []
-                k = 0
                 for k in range(len(feed["entries"])):
-                    n = 0
-                    for n in range(len(feed["entries"][k]["tags"])):
-                        if tag.lower() == feed["entries"][k]["tags"][n]["term"].lower():
-                            matchedEntries.append(k)
-                        # print("    "+feed['entries'][k]['tags'][i]['term'])
+                    entry = feed["entries"][k]
+                    tag_lower = tag.lower()
+                    matched = False
+
+                    if "tags" in entry:
+                        for n in range(len(entry["tags"])):
+                            if tag_lower == entry["tags"][n]["term"].lower():
+                                matched = True
+                                break
+
+                    if not matched:
+                        if "title" in entry and tag_lower in entry["title"].lower():
+                            matched = True
+                        elif (
+                            "summary_detail" in entry
+                            and tag_lower
+                            in entry["summary_detail"].get("value", "").lower()
+                        ):
+                            matched = True
+
+                    if matched:
+                        matchedEntries.append(k)
                 k = 0
                 for k in range(
                     len(matchedEntries)
