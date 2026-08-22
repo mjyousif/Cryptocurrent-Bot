@@ -204,6 +204,8 @@ async def handle_chosen_inline_result(update: Update, context: ContextTypes.DEFA
     query = update.chosen_inline_result.query
     inline_message_id = update.chosen_inline_result.inline_message_id
     
+    logger.info("Received chosen inline result! ID: %s, Query: %s", result_id, query)
+    
     if result_id == "ai_fallback" and inline_message_id:
         from services.ai_fallback import process_ai_query
         try:
