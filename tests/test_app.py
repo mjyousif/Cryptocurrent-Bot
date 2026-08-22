@@ -98,4 +98,8 @@ async def test_button_ai_summary(mock_generate, MockClient):
     await app.button(update, context)
     
     update.callback_query.answer.assert_any_call("Generating AI summary...")
-    update.callback_query.edit_message_text.assert_called_with("Bitcoin is doing great today!")
+    from telegram.constants import ParseMode
+    update.callback_query.edit_message_text.assert_called_with(
+        text="Bitcoin is doing great today!",
+        parse_mode=ParseMode.HTML
+    )
