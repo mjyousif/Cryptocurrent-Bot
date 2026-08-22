@@ -53,7 +53,11 @@ async def process_ai_query(query: str) -> str:
     if market_data_str:
         final_prompt += f"Here is the latest live market data you can use to inform your answer:\n{market_data_str}\n\n"
     
-    final_prompt += "Provide a helpful, direct, and concise response to the user's query based on the data if available."
+    final_prompt += (
+        "Provide a helpful, direct, and concise response to the user's query based on the data if available. "
+        "IMPORTANT: You must format your response using basic HTML tags (like <b> for bold and <i> for italics). "
+        "Do NOT use markdown like **. Do not use any other HTML tags."
+    )
     
     try:
         final_response = generate_text(final_prompt, temperature=0.3, max_output_tokens=300)
