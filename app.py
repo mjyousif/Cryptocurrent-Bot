@@ -37,11 +37,7 @@ logger = logging.getLogger(__name__)
 logger.debug("Logger configured with level %s", LOG_LEVEL)
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-if not TOKEN:
-    raise ValueError(
-        "TELEGRAM_BOT_TOKEN environment variable is not set. "
-        "Please set it in your .env file or as an environment variable."
-    )
+
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -206,6 +202,12 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 def setup(webhook_url=None):
     """If webhook_url is not passed, run with long-polling."""
+    if not TOKEN:
+        raise ValueError(
+            "TELEGRAM_BOT_TOKEN environment variable is not set. "
+            "Please set it in your .env file or as an environment variable."
+        )
+
     # Create application
     application = Application.builder().token(TOKEN).build()
     logger.info("Application created; registering handlers")
