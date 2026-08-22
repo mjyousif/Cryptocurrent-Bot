@@ -4,24 +4,23 @@ This centralizes the branching logic (news / multi-coin / ratio / single coin)
 so `app.inline_crypto` can delegate to a testable unit.
 """
 
-from uuid import uuid4
 import logging
+import re
+from uuid import uuid4
+
 from telegram import (
-    InlineKeyboardMarkup,
     InlineKeyboardButton,
+    InlineKeyboardMarkup,
     InlineQueryResultArticle,
-    InlineQueryResultPhoto,
     InputTextMessageContent,
 )
 
 from api import _build_multi_coin_results, _build_single_coin_results
-from services.crypto_service import get_crypto_list, get_coin_ratio
+from services.crypto_service import get_coin_ratio, get_crypto_list
 from services.feedReader import news
 
 logger = logging.getLogger(__name__)
 
-
-import re
 
 class InlineQueryProcessor:
     """Process an inline query string and return (results, cache_time).
@@ -38,9 +37,15 @@ class InlineQueryProcessor:
         # The first matching regex decides which handler processes the query.
         self.routes = [
             (re.compile(r"(?i)^news(?:\s+(.+))?$"), self._handle_news),
-            (re.compile(r"^([a-zA-Z0-9\-\.]+)\s*/\s*([a-zA-Z0-9\-\.]+)$"), self._handle_ratio),
-            (re.compile(r"^[a-zA-Z0-9\-\.]+(?:,[a-zA-Z0-9\-\.]+)+$"), self._handle_multi_coin),
-            (re.compile(r"^(.*)$"), self._handle_single_coin_or_fallback), # Catch-all
+            (
+                re.compile(r"^([a-zA-Z0-9\-\.]+)\s*/\s*([a-zA-Z0-9\-\.]+)$"),
+                self._handle_ratio,
+            ),
+            (
+                re.compile(r"^[a-zA-Z0-9\-\.]+(?:,[a-zA-Z0-9\-\.]+)+$"),
+                self._handle_multi_coin,
+            ),
+            (re.compile(r"^(.*)$"), self._handle_single_coin_or_fallback),  # Catch-all
         ]
 
     def build_results(self, query: str):
@@ -53,7 +58,7 @@ class InlineQueryProcessor:
             match = pattern.match(query)
             if match:
                 return handler(match)
-                
+
         return [], None
 
     def _handle_news(self, match: re.Match):
@@ -62,14 +67,15 @@ class InlineQueryProcessor:
             articles = news(search_term.strip())
         else:
             articles = news()
-            
+
         results = [
             InlineQueryResultArticle(
-                id=uuid4(),
+                id=str(uuid4()),
                 title=a.title,
                 input_message_content=InputTextMessageContent(a.link),
                 description=a.description,
-            ) for a in articles
+            )
+            for a in articles
         ]
         return results, None
 
@@ -78,11 +84,11 @@ class InlineQueryProcessor:
         ratio = get_coin_ratio(coin1, coin2)
         if not ratio:
             return [], None
-            
+
         description = f"{ratio} {coin1.upper()}/{coin2.upper()}"
         results = [
             InlineQueryResultArticle(
-                id=uuid4(),
+                id=str(uuid4()),
                 title=f"{coin1} / {coin2}",
                 description=description,
                 input_message_content=InputTextMessageContent(description),
@@ -108,7 +114,7 @@ class InlineQueryProcessor:
         except ValueError:
             # Ignore configuration errors here and let it fallback to AI
             pass
-            
+
         return self._handle_ai_fallback(query)
 
     def _handle_ai_fallback(self, query: str):
@@ -119,10 +125,12 @@ class InlineQueryProcessor:
                 id="ai_fallback",
                 title=title,
                 description=description,
-                input_message_content=InputTextMessageContent(f"Thinking about: {query} 💭..."),
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("⏳ Generating...", callback_data="ignore")]
-                ])
+                input_message_content=InputTextMessageContent(
+                    f"Thinking about: {query} 💭..."
+                ),
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("⏳ Generating...", callback_data="ignore")]]
+                ),
             )
         ]
         return results, None

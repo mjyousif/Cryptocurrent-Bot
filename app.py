@@ -1,30 +1,21 @@
-from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    InlineQueryHandler,
-    CallbackQueryHandler,
-    ChosenInlineResultHandler,
-    ContextTypes,
-)
+import logging
+import os
+from uuid import uuid4
+
+from dotenv import load_dotenv
 from telegram import (
     InlineQueryResultArticle,
-    InlineQueryResultPhoto,
     InputTextMessageContent,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
+    Update,
 )
-
-from api import _build_multi_coin_results, _build_single_coin_results
-
-import logging
-
-from uuid import uuid4
-import os
-from dotenv import load_dotenv
-from services.crypto_service import get_crypto_list, get_coin_ratio
-from services.feedReader import *
-from services.sorter import *
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    ChosenInlineResultHandler,
+    CommandHandler,
+    ContextTypes,
+    InlineQueryHandler,
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,7 +29,6 @@ logger = logging.getLogger(__name__)
 logger.debug("Logger configured with level %s", LOG_LEVEL)
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -70,7 +60,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         try:
             # Fetch latest quote from CoinMarketCap
             from data.coinmarketcap import CoinMarketCapClient, parse_coin_info
-            from data.google_ai import generate_text, GoogleAIError
+            from data.google_ai import GoogleAIError, generate_text
 
             client = CoinMarketCapClient()
             resp = client.get_quotes([int(coin_id)], currency)
@@ -127,14 +117,14 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             # Edit the original message with the generated text, but avoid editing if content is identical
             current_msg = update.callback_query.message
             from telegram.constants import ParseMode
+
             try:
                 if current_msg and getattr(current_msg, "text", None) == generated:
                     # Message already has same content; notify user and skip edit
                     await update.callback_query.answer("Already up to date.")
                 else:
                     await update.callback_query.edit_message_text(
-                        text=generated,
-                        parse_mode=ParseMode.HTML
+                        text=generated, parse_mode=ParseMode.HTML
                     )
             except Exception as exc:
                 # Ignore 'Message is not modified' errors (no change)
@@ -181,7 +171,7 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.inline_query.answer(
             [
                 InlineQueryResultArticle(
-                    id=uuid4(),
+                    id=str(uuid4()),
                     title="Configuration error",
                     input_message_content=InputTextMessageContent(str(e)),
                     description="Error processing your request. Please try again later.",
@@ -200,43 +190,47 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.inline_query.answer(results)
 
 
-async def handle_chosen_inline_result(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_chosen_inline_result(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     if not update.chosen_inline_result:
         return
-        
+
     result_id = update.chosen_inline_result.result_id
     query = update.chosen_inline_result.query
     inline_message_id = update.chosen_inline_result.inline_message_id
-    
+
     logger.info("Received chosen inline result! ID: %s, Query: %s", result_id, query)
-    
+
     if result_id == "ai_fallback" and inline_message_id:
         from services.ai_fallback import process_ai_query
+
         try:
             # Process the query using our new AI fallback service
             response_text = await process_ai_query(query)
-            
+
             import html
+
             from telegram.constants import ParseMode
-            
+
             safe_query = html.escape(query)
             final_text = f"<b>Question:</b> {safe_query}\n\n{response_text}"
-            
+
             # Edit the original "Thinking..." message
             await context.bot.edit_message_text(
                 inline_message_id=inline_message_id,
                 text=final_text,
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
         except Exception as e:
             logger.error("Failed to process chosen inline result for AI: %s", e)
             try:
                 await context.bot.edit_message_text(
                     inline_message_id=inline_message_id,
-                    text="Sorry, I encountered an error while analyzing your request."
+                    text="Sorry, I encountered an error while analyzing your request.",
                 )
             except Exception:
-                pass
+                pass  # nosec
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:

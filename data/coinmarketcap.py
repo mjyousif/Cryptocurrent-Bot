@@ -6,11 +6,11 @@ used in the project. It returns raw JSON or typed dataclass objects (CryptoQuote
 
 from __future__ import annotations
 
+import logging
 import os
 import time
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-import logging
 import requests
 
 from .models import CryptoQuote
@@ -38,14 +38,14 @@ class CoinMarketCapClient:
             )
         self._sess = requests.Session()
         self._sess.headers.update({"X-CMC_PRO_API_KEY": self.api_key})
-        logger.debug(
-            "CoinMarketCapClient initialized (listings_ttl=%s)",
-            self._listings_ttl if hasattr(self, "_listings_ttl") else "unknown",
-        )
-
         # Simple in-memory cache for listings (id -> data) with TTL
         self._listings_cache: dict = {"data": None, "ts": 0}
-        self._listings_ttl = 60 * 60  # 1 hour
+        self._listings_ttl: int = 60 * 60  # 1 hour
+
+        logger.debug(
+            "CoinMarketCapClient initialized (listings_ttl=%s)",
+            self._listings_ttl,
+        )
 
     def get_listings(self) -> List[Dict[str, Any]]:
         """Return the data list from /v1/cryptocurrency/map.
@@ -135,7 +135,7 @@ def parse_coin_info(coin_info: Dict[str, Any], currency: str) -> CryptoQuote:
         return None if v is None else float(v)
 
     return CryptoQuote(
-        id=int(coin_info.get("id")),
+        id=int(coin_info["id"]),
         name=coin_info.get("name") or "",
         symbol=coin_info.get("symbol") or "",
         price=get_val("price"),

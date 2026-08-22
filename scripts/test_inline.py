@@ -1,5 +1,5 @@
 import asyncio
-from types import SimpleNamespace
+
 from app import inline_crypto
 
 

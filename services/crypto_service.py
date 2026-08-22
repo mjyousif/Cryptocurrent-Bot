@@ -9,9 +9,9 @@ It uses `data.CoinMarketCapClient` and `sorter.valueSorter` internally.
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
-import logging
 from data.coinmarketcap import CoinMarketCapClient, parse_coin_info
 from data.models import CryptoQuote
 from services.sorter import valueSorter
@@ -104,7 +104,7 @@ def _parse_query(query: str):
 
     # default currency: if trailing token is not a currency, append USD
     last_token = query_split[-1] if query_split else ""
-    if not last_token.upper() in accepted_currencies:
+    if last_token.upper() not in accepted_currencies:
         working_query += " usd"
     currency = working_query[-3:].upper()
 
@@ -128,7 +128,7 @@ def get_crypto_list(query: str) -> List[FormattedCrypto]:
     logger.debug("Loaded %d listings from client", len(listings))
 
     # map coin names/slugs/symbols to ids
-    id_map = {}
+    id_map: dict[str, int] = {}
     for listing in listings:
         id_map.setdefault(listing.get("name", "").lower(), listing["id"])
         id_map.setdefault(listing.get("slug", "").lower(), listing["id"])
@@ -183,13 +183,13 @@ def get_coin_ratio(coin1: str, coin2: str) -> Optional[str]:
 
     def _resolve(coin):
         listings = client.get_listings()
-        for l in listings:
+        for listing in listings:
             if (
-                coin == l.get("name", "").lower()
-                or coin == l.get("slug", "").lower()
-                or coin == l.get("symbol", "").lower()
+                coin == listing.get("name", "").lower()
+                or coin == listing.get("slug", "").lower()
+                or coin == listing.get("symbol", "").lower()
             ):
-                return l["id"]
+                return listing.get("id")
         return None
 
     c1 = coin1.replace(" ", "-").lower()

@@ -3,14 +3,15 @@
 This package centralizes presentation helpers (moved from the top-level `api.py`).
 """
 
-from uuid import uuid4
 import logging
+from uuid import uuid4
+
 from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
     InlineQueryResultArticle,
     InlineQueryResultPhoto,
     InputTextMessageContent,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
 )
 
 logger = logging.getLogger(__name__)

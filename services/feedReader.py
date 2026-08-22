@@ -34,7 +34,7 @@ def news(tag=None):
     for i in range(urlLen):
         if openEntries > 0:
             feed = feedparser.parse(url[i])
-            if tag == None:
+            if tag is None:
                 k = 0
                 for k in range(
                     len(feed["entries"])

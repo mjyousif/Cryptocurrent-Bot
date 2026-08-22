@@ -104,16 +104,14 @@ def generate_text(
 
 class Response:
     """Small compatibility response object."""
+
     def __init__(self, text: str):
         self.text = text
 
 
 class _Models:
     def generate_content(
-        self,
-        model: str = DEFAULT_MODEL,
-        contents: Any = None,
-        **kwargs
+        self, model: str = DEFAULT_MODEL, contents: Any = None, **kwargs
     ) -> Response:
         """Gemini-style generate_content compatible method (uses SDK directly)."""
         if contents is None:
@@ -127,6 +125,7 @@ class _Models:
 
 class Client:
     """Lightweight client compatible with the Gemini quickstart usage."""
+
     def __init__(self):
         self.models = _Models()
 
