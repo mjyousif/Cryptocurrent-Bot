@@ -93,9 +93,9 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 f"Do speculate (either way) and provide investment advice."
             )
 
-            # Telegram MarkdownV2 examples to include in the instruction so the LLM outputs compatible markup
             formatting_notes = (
-                "Do not use any formatting, return plain text and emojis only."
+                "IMPORTANT: You must format your response using basic HTML tags (like <b> for bold and <i> for italics). "
+                "Do NOT use markdown like **. Do not use any other HTML tags."
             )
 
             full_prompt = prompt + "\n\n" + formatting_notes
@@ -126,12 +126,16 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             # Edit the original message with the generated text, but avoid editing if content is identical
             current_msg = update.callback_query.message
+            from telegram.constants import ParseMode
             try:
                 if current_msg and getattr(current_msg, "text", None) == generated:
                     # Message already has same content; notify user and skip edit
                     await update.callback_query.answer("Already up to date.")
                 else:
-                    await update.callback_query.edit_message_text(generated)
+                    await update.callback_query.edit_message_text(
+                        text=generated,
+                        parse_mode=ParseMode.HTML
+                    )
             except Exception as exc:
                 # Ignore 'Message is not modified' errors (no change)
                 if "Message is not modified" in str(exc):
