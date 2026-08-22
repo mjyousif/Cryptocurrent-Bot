@@ -1,9 +1,9 @@
-# CryptoCurrent Bot - Feature Overview
+# End User Features & Usage
 
-This document provides an exhaustive list of the current features implemented in the CryptoCurrent telegram bot.
+This document details all end-user features of the CryptoCurrent-Bot and how to use them within Telegram.
 
 ## 1. Inline Cryptocurrency Information
-The bot operates inline, meaning it can be called from any chat by typing `@CryptoCurrent_bot` followed by a query. It responds with an inline panel showing current market data.
+The bot operates inline, meaning it can be called from any chat without needing to message the bot directly. Type `@CryptoCurrent_bot` followed by your query.
 
 ### Single Coin Lookup
 Retrieve the price, market capitalization, and percentage changes for a single cryptocurrency.
@@ -26,15 +26,21 @@ Users can calculate the price ratio between two different cryptocurrencies.
 - **Example:** `@CryptoCurrent_bot btc/eth`
 
 ## 3. Cryptocurrency News
-Users can fetch the latest cryptocurrency news articles directly inline. It searches across CoinDesk, CoinTelegraph, and TheMerkle.
+Users can fetch the latest cryptocurrency news articles directly inline. The bot searches across CoinDesk, CoinTelegraph, and TheMerkle.
 - **Format (Latest News):** `@CryptoCurrent_bot news`
 - **Format (News by tag/topic):** `@CryptoCurrent_bot news <search term>`
 - **Example:** `@CryptoCurrent_bot news bitcoin`
 
-## 4. Supported Output Currencies
+## 4. AI Features
+
+### Natural Language Fallback
+If the query doesn't match standard commands (like single/multi coins, news, or ratios), it falls back to an AI agent that can understand natural language. It will extract the mentioned coins, look up live market data, and generate a response.
+- **Format:** `@CryptoCurrent_bot <natural language question>`
+- **Example:** `@CryptoCurrent_bot what is the price of bitcoin and ethereum?`
+
+### AI Summaries
+For single-coin queries, users can click the inline callback button labeled **`AI summary`** attached to the result. This triggers the AI to provide a fun and truthful 2-3 sentence market summary of the coin based on live data.
+
+## 5. Supported Output Currencies
 By default, the bot outputs data in USD, but it supports specifying an output fiat currency from a wide list of options, including:
 `AUD, BRL, CAD, CHF, CLP, CNY, CZK, DKK, EUR, GBP, HKD, HUF, IDR, ILS, INR, JPY, KRW, MXN, MYR, NOK, NZD, PHP, PKR, PLN, RUB, SEK, SGD, THB, TRY, TWD, ZAR, USD`.
-
-## 5. Data Providers and Integrations
-- **CoinMarketCap Pro API:** The bot fetches its primary cryptocurrency data from the CoinMarketCap Pro API.
-- **Google AI Summary:** For single-coin queries, the bot integrates with Google AI to provide a "bombastic and truthful" 2-3 sentence market summary of the coin. This is triggered via an inline callback button (`AI summary`) attached to the inline query result.
