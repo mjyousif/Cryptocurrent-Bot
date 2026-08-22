@@ -4,6 +4,7 @@ from telegram.ext import (
     CommandHandler,
     InlineQueryHandler,
     CallbackQueryHandler,
+    ChosenInlineResultHandler,
     ContextTypes,
 )
 from telegram import (
@@ -195,6 +196,36 @@ async def inline_crypto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.inline_query.answer(results)
 
 
+async def handle_chosen_inline_result(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.chosen_inline_result:
+        return
+        
+    result_id = update.chosen_inline_result.result_id
+    query = update.chosen_inline_result.query
+    inline_message_id = update.chosen_inline_result.inline_message_id
+    
+    if result_id == "ai_fallback" and inline_message_id:
+        from services.ai_fallback import process_ai_query
+        try:
+            # Process the query using our new AI fallback service
+            response_text = await process_ai_query(query)
+            
+            # Edit the original "Thinking..." message
+            await context.bot.edit_message_text(
+                inline_message_id=inline_message_id,
+                text=response_text
+            )
+        except Exception as e:
+            logger.error("Failed to process chosen inline result for AI: %s", e)
+            try:
+                await context.bot.edit_message_text(
+                    inline_message_id=inline_message_id,
+                    text="Sorry, I encountered an error while analyzing your request."
+                )
+            except Exception:
+                pass
+
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log the error and send a telegram message to notify the developer."""
     logger.error("Exception while handling an update:", exc_info=context.error)
@@ -216,6 +247,7 @@ def setup(webhook_url=None):
     application.add_handler(CommandHandler("start", start))
     application.add_handler(InlineQueryHandler(inline_crypto))
     application.add_handler(CallbackQueryHandler(button))
+    application.add_handler(ChosenInlineResultHandler(handle_chosen_inline_result))
 
     # Register error handler
     application.add_error_handler(error_handler)

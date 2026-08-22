@@ -89,14 +89,25 @@ class InlineQueryProcessor:
             ]
             return results, None
 
-        # Single coin fallback
+        # Single coin fallback / AI Fallback
         try:
             crypto_list = get_crypto_list(query)
+            if crypto_list:
+                results = _build_single_coin_results(crypto_list[0])
+                # Original behavior used cache_time=300 for single coin responses
+                return results, 300
         except ValueError:
-            raise
-        if not crypto_list:
-            return [], None
-        coin = crypto_list[0]
-        results = _build_single_coin_results(coin)
-        # Original behavior used cache_time=300 for single coin responses
-        return results, 300
+            pass
+            
+        # If no crypto found or a ValueError occurred, offer the AI Fallback
+        title = "Ask AI ✨"
+        description = f"Generate an AI response for: '{query}'"
+        results = [
+            InlineQueryResultArticle(
+                id="ai_fallback",
+                title=title,
+                description=description,
+                input_message_content=InputTextMessageContent(f"Thinking about: {query} 💭..."),
+            )
+        ]
+        return results, None
