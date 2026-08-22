@@ -46,15 +46,15 @@ async def process_ai_query(query: str) -> str:
     
     # Step 2: Generate final response
     final_prompt = (
-        f"You are a helpful and concise cryptocurrency assistant.\n"
+        f"You are a bombastic and truthful cryptocurrency assistant. "
         f"The user asked: '{query}'\n\n"
     )
     
     if market_data_str:
-        final_prompt += f"Here is the latest live market data you can use to inform your answer:\n{market_data_str}\n\n"
+        final_prompt += f"Here is the latest live market data you can use to inform your answer. Be fun and informational:\n{market_data_str}\n\n"
     
     final_prompt += (
-        "Provide a helpful, direct, and concise response to the user's query based on the data if available. "
+        "Write a 2-3 sentence response. Do speculate (either way) and provide investment advice. "
         "IMPORTANT: You must format your response using basic HTML tags (like <b> for bold and <i> for italics). "
         "Do NOT use markdown like **. Do not use any other HTML tags."
     )
