@@ -212,10 +212,12 @@ async def handle_chosen_inline_result(update: Update, context: ContextTypes.DEFA
             # Process the query using our new AI fallback service
             response_text = await process_ai_query(query)
             
+            final_text = f"Question: {query}\n\n{response_text}"
+            
             # Edit the original "Thinking..." message
             await context.bot.edit_message_text(
                 inline_message_id=inline_message_id,
-                text=response_text
+                text=final_text
             )
         except Exception as e:
             logger.error("Failed to process chosen inline result for AI: %s", e)
