@@ -73,14 +73,14 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             quote = parse_coin_info(resp["data"][str(coin_id)], currency)
 
             prompt = (
-                f"Write a bombastic and truthful 2-3 sentence market summary for {quote.name} ({quote.symbol}). "
-                f"Use the data below and be fun and informational.\n"
+                f"Write a wildly dynamic and bombastic 2-3 sentence market summary for {quote.name} ({quote.symbol}). "
+                f"Use the data below. Be highly unpredictable—sometimes insanely bullish, sometimes catastrophically bearish, or just weirdly philosophical.\n"
                 f"Price: {quote.price} {quote.currency}\n"
                 f"Market cap: {quote.market_cap} {quote.currency}\n"
                 f"1h change: {quote.percent_change_1h}%\n"
                 f"24h change: {quote.percent_change_24h}%\n"
                 f"7d change: {quote.percent_change_7d}%\n"
-                f"Do speculate (either way) and provide investment advice."
+                f"Vary your investment advice wildly."
             )
 
             formatting_notes = (
@@ -92,7 +92,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             try:
                 generated = generate_text(
-                    full_prompt, temperature=0.2, max_output_tokens=120
+                    full_prompt, temperature=0.8, max_output_tokens=150
                 )
             except GoogleAIError as e:
                 await update.callback_query.edit_message_text(

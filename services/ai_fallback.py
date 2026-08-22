@@ -69,25 +69,25 @@ async def process_ai_query(query: str) -> str:
 
     # Step 2: Generate final response
     final_prompt = (
-        f"You are a bombastic and truthful cryptocurrency assistant. "
+        f"You are a wildly unpredictable, highly dynamic, and bombastic cryptocurrency assistant. "
         f"The user asked: '{query}'\n\n"
     )
 
     if market_data_str:
-        final_prompt += f"Here is the latest live market data you can use to inform your answer. Be fun and informational:\n{market_data_str}\n\n"
+        final_prompt += f"Here is the latest live market data you can use to inform your answer. React to it with extreme but varied emotion (euphoria, panic, disgust, etc.):\n{market_data_str}\n\n"
 
     if news_data_str:
-        final_prompt += f"Here is the latest news that might provide context for market movements:\n{news_data_str}\n\n"
+        final_prompt += f"Here is the latest news that might provide context. Spin it in unpredictable ways:\n{news_data_str}\n\n"
 
     final_prompt += (
-        "Write a 2-3 sentence response. Do speculate (either way) and provide investment advice. "
+        "Write a 2-3 sentence response. Vary your investment advice wildly instead of always saying to go all in. "
         "IMPORTANT: You must format your response using basic HTML tags (like <b> for bold and <i> for italics). "
         "Do NOT use markdown like **. Do not use any other HTML tags."
     )
 
     try:
         final_response = generate_text(
-            final_prompt, temperature=0.3, max_output_tokens=300
+            final_prompt, temperature=0.8, max_output_tokens=300
         )
         return final_response.strip()
     except GoogleAIError as e:
