@@ -23,12 +23,16 @@ def mock_env(monkeypatch):
 
 @pytest_asyncio.fixture
 async def telegram_app(mock_env):
-    application = app.setup(webhook_url="https://fake.url")
-    application.bot = AsyncMock()  # Mock the bot methods
-    application.bot.id = 123456789
-    await application.initialize()
-    yield application
-    await application.shutdown()
+    with patch("telegram.ext.ExtBot.initialize", new_callable=AsyncMock):
+        application = app.setup(webhook_url="https://fake.url")
+        application.bot = AsyncMock()  # Mock the bot methods
+        application.bot.id = 123456789
+
+        # Patch the application's bot attribute to our mock before initialize
+        with patch.object(application, "bot", application.bot):
+            await application.initialize()
+            yield application
+            await application.shutdown()
 
 
 @pytest.fixture
